@@ -2,3 +2,6 @@
 elm-stuff
 # elm-repl generated files
 repl-temp-*
+# stupid mac stuff
+.DS_Store
+**/.DS_Store
