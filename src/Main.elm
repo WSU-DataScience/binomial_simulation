@@ -94,10 +94,8 @@ updateSampleSuccess model =
   case model.singleObservation.successLbl.state of
     Correct ->
       let
-        oldSampleModel = model.sample
-        oldSample = oldSampleModel.sample
-        newSample = { oldSample | successLbl = model.singleObservation.successLbl.str}
-        newSampleModel = { oldSampleModel | sample = newSample }
+        lbl = model.singleObservation.successLbl.str
+        (newSampleModel, _) = model.sample |> OneSample.update (OneSample.ChangeSuccessLbl lbl)
       in
         {model | sample = newSampleModel}
 
@@ -119,11 +117,8 @@ updateSampleFailure model =
   case model.singleObservation.failureLbl.state of
     Correct ->
       let
-        oldSampleModel = model.sample
-        oldSample : Sample
-        oldSample = oldSampleModel.sample
-        newSample = { oldSample | failureLbl = model.singleObservation.failureLbl.str}
-        newSampleModel = { oldSampleModel | sample = newSample }
+        lbl = model.singleObservation.failureLbl.str
+        (newSampleModel, _) = model.sample |> OneSample.update (OneSample.ChangeFailureLbl lbl)
       in
         {model | sample = newSampleModel}
 
@@ -144,11 +139,34 @@ updateSampleP : Model -> Model
 updateSampleP model =
   case model.singleObservation.pData.state of
     Correct ->
-      {model | sample = OneSample.updateP model.singleObservation.pData.val model.sample}
+      let
+        pData = model.singleObservation.pData
+        (newSample, _) = model.sample |> OneSample.update (OneSample.ChangeP pData)
+      in
+        {model | sample = newSample }
 
     _ -> 
       model
 
+updateSampleN : Model -> Model
+updateSampleN model =
+  case model.singleObservation.nData.state of
+    Correct ->
+      let
+        nData = model.singleObservation.nData
+        (newSample, _) = model.sample |> OneSample.update (OneSample.ChangeN nData)
+      in
+        {model | sample = newSample }
+
+    _ -> 
+      model
+
+updateSampleStatistic model =
+  let
+    sampleModel = model.sample
+    newSampleModel = { sampleModel | statistic = model.singleObservation.statistic}
+  in
+    { model | sample = newSampleModel}
 
 updateSpinnerVisibility : Model -> Model
 updateSpinnerVisibility model = 
@@ -156,6 +174,8 @@ updateSpinnerVisibility model =
         canShow = (  model.singleObservation.successLbl.state == Correct 
                   && model.singleObservation.failureLbl.state == Correct
                   && model.singleObservation.pData.state      == Correct
+                  && model.singleObservation.nData.state      == Correct
+                  && model.singleObservation.statistic        /= NotSelected 
                   )
         vis = if canShow then Shown else Hidden
       in
@@ -169,11 +189,14 @@ updateSpinner model =
   |> updateSpinnerP
   |> updateSpinnerVisibility
 
-updateSampleFromObs model =
+updateSample model =
   model
   |> updateSampleSuccess
   |> updateSampleFailure
   |> updateSampleP
+  |> updateSampleN
+  |> updateSampleStatistic
+
 
 updateSpinnerLocation : Float -> Spinner.Model -> Spinner.Model
 updateSpinnerLocation location model =
@@ -188,26 +211,20 @@ updateLocation model =
     { model | spinner = updateSpinnerLocation location model.spinner }
  
 
-updateSampleFromAnim : Animation.Model -> Model -> Model
-updateSampleFromAnim oldModel model =
-  let
-    oldOutcomes = oldModel.sample 
-    newOutcomes = model.animation.sample  
-    newSample =
-      if oldOutcomes /= newOutcomes then
-        model.sample |> updateSampleFromOutcome newOutcomes
-      else
-        model.sample
-  in
-    { model | sample = newSample }
 
+updateAnimationN : Model -> Model
 updateAnimationN model =
-  let
-    n = model.sample.n
-    oldAnimation = model.animation
-    newAnimation = { oldAnimation | n = n}
-  in
-    { model | animation = newAnimation}
+  case model.singleObservation.nData.state of
+    Correct ->
+      let
+        n = Maybe.withDefault 20 model.singleObservation.nData.val
+        oldAnimation = model.animation
+        newAnimation = { oldAnimation | n = n}
+      in
+        { model | animation = newAnimation}
+
+    _ ->
+      model
     
 
 update msg model = 
@@ -222,15 +239,24 @@ update msg model =
             SingleObservation.ChangeP _ ->
               CollectStats.update (CollectStats.UpdateP newModel.pData) model.collect
 
+            SingleObservation.ChangeN _ ->
+              CollectStats.update (CollectStats.UpdateN newModel.nData) model.collect
+
+            SingleObservation.UseCount ->
+              CollectStats.update CollectStats.UseCount model.collect
+
+            SingleObservation.UseProp ->
+              CollectStats.update CollectStats.UseProp model.collect
             _ ->
               (model.collect, Cmd.none)
         finalModel = 
           { model | singleObservation = newModel, collect = collectModel} 
             |> updateSpinner
-            |> updateSampleFromObs
+            |> updateSample
+            |> updateAnimationN
         in 
            (finalModel
-           , samplePlotCmd finalModel
+           , distPlotCmd finalModel.collect
            )
 
     SpinnerMsg sPmsg -> 
@@ -243,53 +269,77 @@ update msg model =
     AnimationMsg aMsg -> 
       let 
         (newModel, newCmd) = Animation.update aMsg (.animation model)
-        newOutcomes = newModel.sample
-        oldOutcomes = model.animation.sample
-        outcomesChanged = newOutcomes /= oldOutcomes
-        notSpinMsg = 
-          case aMsg of
-            Spin ->
-              False
+
+        sampleModel = 
+          case newModel.state of
+            Animation.UpdateSample _ ->
+              let
+                outcomes = newModel.sample
+                newSample = updateSampleFromOutcome outcomes model.sample
+                currentSampleModel = model.sample
+              in
+                { currentSampleModel | sample = newSample}
+
+            UpdateDist _ ->
+              let
+                outcomes = newModel.sample
+                newSample = updateSampleFromOutcome outcomes model.sample
+                currentSampleModel = model.sample
+              in
+                { currentSampleModel | sample = newSample}
 
             _ ->
-              True
-        updatedSample = 
-          if outcomesChanged then
-            model.sample |> updateSampleFromOutcome newOutcomes
-          else
-            model.sample
-        -- checking notSpinMsg assure there no Cmd collisions/loss
-        -- as animiation commands only happen on Spin commands
+              model.sample
+
+        (collectModel, _ ) = 
+          case newModel.state of
+            UpdateDist _ ->
+              let
+                numSuccess = newModel.sample 
+                           |> List.map (outcome model.sample.p) 
+                           |> List.sum
+              in
+                CollectStats.update (CollectStats.OneNewStatistic  numSuccess) model.collect
+
+            _ ->
+              (model.collect, Cmd.none)
+
         finalModel = 
-          { model | animation = newModel, sample = updatedSample} 
+          { model | animation = newModel, sample = sampleModel, collect = collectModel} 
             |> updateLocation
-        nextCmd = if notSpinMsg && outcomesChanged then
-                      samplePlotCmd finalModel
-                  else
-                      Cmd.map AnimationMsg newCmd
-        in ( finalModel
-           , nextCmd
-           )
+
+        finalCmd =
+          case newModel.state of
+            Animation.UpdateSample _ ->
+              samplePlotCmd finalModel
+
+            UpdateSampleNoAnimation _ ->
+              samplePlotCmd finalModel
+
+            UpdateDist _ ->
+              distPlotCmd collectModel
+
+            _ ->
+              Cmd.map AnimationMsg newCmd
+
+      in ( finalModel
+         , finalCmd
+         )
 
     SampleMsg sMsg -> 
       let 
         (newModel, _) = OneSample.update sMsg (.sample model)
-        (animation, _) = 
+        (collectModel, _ ) = 
           case sMsg of
-            OneSample.ChangeN _ ->
-               Animation.update (Animation.UpdateN newModel.nData) model.animation
-
-            _ ->
-               (model.animation, Cmd.none)
-
-        (collectModel, _) =
-          case sMsg of
-            OneSample.ChangeN _ ->
-              CollectStats.update (CollectStats.UpdateN newModel.nData) model.collect
+            OneSample.UpdateSample ws ->
+              let
+                numSuccess = ws |> List.map (outcome model.sample.p) |> List.sum
+              in
+                CollectStats.update (CollectStats.OneNewStatistic  numSuccess) model.collect
 
             _ ->
               (model.collect, Cmd.none)
-        in ({ model | sample = newModel, animation = animation, collect = collectModel} 
+        in ({ model | sample = newModel, collect = collectModel}
            , Cmd.none
            )
 
@@ -332,7 +382,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   let
     baseBatch = [ Dropdown.subscriptions model.animation.splitDropState (AnimationMsg << SplitMsg)
-                , Dropdown.subscriptions model.collect.pulldown (CollectMsg << ChangePulldown) ]
+                , Dropdown.subscriptions model.singleObservation.pulldown (SingleObservationMsg << ChangePulldown) ]
       
   in
     
@@ -378,9 +428,7 @@ debugView model =
 
 maybeCollectView model =
   let
-    show = (model.singleObservation.pData.state == Correct
-           && model.sample.nData.state == Correct
-           && model.spinner.visibility == Shown)
+    show =  model.spinner.visibility == Shown
   in
     if show then
       collectButtonView model.collect
@@ -389,9 +437,7 @@ maybeCollectView model =
 
 maybePValueView model =
   let
-    show = (model.singleObservation.pData.state == Correct
-           && model.sample.nData.state == Correct
-           && model.spinner.visibility == Shown)
+    show =  model.spinner.visibility == Shown
   in
     if show then
       pvalueView model.collect
@@ -417,6 +463,15 @@ getSpinnerModel model =
           baseSpinner |> updateWithLocation s.location
 
         Paused s ->
+          baseSpinner |> updateWithLocation s.location
+
+        Animation.UpdateSample s ->
+          baseSpinner |> updateWithLocation s.location
+
+        UpdateSampleNoAnimation s ->
+          baseSpinner |> updateWithLocation s.location
+
+        UpdateDist s ->
           baseSpinner |> updateWithLocation s.location
 
 

@@ -44,7 +44,7 @@ mainGrid singleObs collectButtons pValue spinner spinButton sample debug =
                 ]
               ]
 
-singleObsGrid successInput failureInput pInput =
+singleObsGrid successInput failureInput pInput nInput =
     h4 [] [ Html.text "A Single Observation"
           , Html.br [] []
           , Form.group []
@@ -58,8 +58,8 @@ singleObsGrid successInput failureInput pInput =
               , Grid.row []
                   [ Grid.col [ Col.xs7 ]
                       [ failureInput ]
-                  , Grid.col [ Col.xs2 ]
-                      []
+                  , Grid.col [ Col.xs5 ]
+                      [ nInput ]
                   ]
               ]
           ]
@@ -70,6 +70,7 @@ exampleSingleObservation =
       { successLbl = "Correct"
       , failureLbl = "Incorrect"
       , p = 0.25
+      , n = 20
       , handLocation = 0.725
       , currentOutcome = "Incorrect"
       , visability = Shown
@@ -79,16 +80,17 @@ exampleSingleObservation =
       (Html.text ("Success: " ++ state.successLbl))
       (Html.text ("p: " ++ (String.fromFloat state.p)))
       (Html.text ("Failure: " ++ state.failureLbl))
+      (Html.text ("n: " ++ (String.fromFloat state.n)))
 
 
-sampleGrid nInput =
+sampleGrid statistic =
   div []
       [ Form.group []
-        [ h4 [] [ Html.text "A Sample of Observations"]
+        [ h4 [] [ Html.text "Sample"]
         , Grid.row []
-            [ Grid.col [ Col.xs5 ]
-                      [ nInput ]
-            , Grid.col [ Col.xs9 ] 
+            [ Grid.col [ Col.xs10 ]
+                      [ statistic ]
+            , Grid.col [ Col.xs2 ] 
                        [ ]
             ]
         , Grid.row []
@@ -100,14 +102,14 @@ sampleGrid nInput =
 
 
 
-collectButtonGrid pulldown buttons count =
+collectButtonGrid reset buttons count =
     div [] [ Form.group []
               [ Grid.row []
                   [ Grid.col  [ Col.xs6 ]
                               [ Html.h4 [] [Html.text "Statistics"]
                               ]
                   , Grid.col  [ Col.xs6 ]
-                              [ pulldown ]
+                              [ reset ]
                               
                   ]
               , Grid.row []

@@ -5,6 +5,7 @@ module OneSample exposing (..)
 import Browser
 import Debug
 import DataEntry exposing (..)
+import Binomial exposing (..)
 import Layout exposing (..)
 import SingleObservation exposing (..)
 import Spinner exposing (..)
@@ -31,7 +32,6 @@ main =
 
 -- model
 
-type Statistic = NotSelected | Count | Proportion
 
 type alias Sample = { successLbl : String
                     , failureLbl : String
@@ -69,19 +69,17 @@ samplePlotConfig =  { height = 100
                     }
 
 
-type alias Model =  { nData : NumericData Int
-                    , n : Int
+type alias Model =  { n : Int
                     , p : Float
                     , sample : Sample
-                    , plotVisibility : Visibility 
+                    , statistic : Statistic
                     }
 
 
-initModel = { nData = initInt
-            , n = 20
+initModel = { n = 20
             , p = 0.25
             , sample = emptySample initSampleData
-            , plotVisibility = Hidden
+            , statistic = NotSelected 
             }
 
 init : () -> (Model, Cmd Msg)
@@ -90,90 +88,68 @@ init _ = (initModel, Cmd.none )
 -- messages
 
 type Msg
-  = ChangeN String
-  | UpdateSample SampleData
+  = ChangeN (NumericData Int)
+  | ChangeP (NumericData Float)
+  | ChangeSuccessLbl String
+  | ChangeFailureLbl String
+  | UpdateSample (List Float)
+  | UseCount
+  | UseProp
 
 
 -- update
+updateN : NumericData Int -> Model -> Model
+updateN nData model =
+  case nData.state of
+    Correct ->
+      { model | n = Maybe.withDefault initModel.n nData.val}
 
-isNInOfBounds n = n > 0
+    _ ->
+      model
 
-nEntryState = numericEntryState String.toInt isNInOfBounds
+updateP : NumericData Float -> Model -> Model
+updateP pData model =
+  case pData.state of
+    Correct ->
+      { model | p = Maybe.withDefault initModel.p pData.val}
 
-updateNData : String -> NumericData Int -> NumericData Int 
-updateNData = updateNumeric String.toInt isNInOfBounds
-
-updateN : String -> Model -> Model
-updateN input model =
-  let
-    nData = model.nData |> updateNData input
-  in
-    
-  {model | nData = nData
-         , n = Maybe.withDefault 20 nData.val
-  }
-
-updatePlotVisibility model =
-    let
-        show = model.nData.state == Correct
-    in
-        if show then 
-            {model | plotVisibility = Shown}
-        else
-            {model | plotVisibility = Hidden}
+    _ ->
+      model
 
 
 outcome : Float -> Float -> Int
 outcome p w =
   if w < p then 1 else 0
 
-updateSuccessLbl : String -> { a | successLbl : String } -> { a | successLbl : String }
-updateSuccessLbl lbl sample =
-    { sample | successLbl = lbl}
-
-updateFailureLbl lbl sample =
-    { sample | failureLbl = lbl}
-
-updateCounts numSuccess numFailures sample = 
-    { sample | numSuccess = numSuccess
-             , numFailures = numFailures
-    }
-
-updateP p model =
-  { model | p = Maybe.withDefault model.p p}
-
-updateSampleFromOutcome ws model =
+updateSampleFromOutcome : List Float -> Model -> Sample
+updateSampleFromOutcome ws model = 
   let
-    outcomes = 
+    outcomes =
       ws
       |> List.map (outcome model.p)
-    numSuccess =
-      outcomes
-      |> List.sum
-    numFailures =
-      (List.length outcomes) - numSuccess 
-    newSample = model.sample |> updateCounts numSuccess numFailures
-  in
-    { model | sample = newSample }
-
-updateSample sampleData = 
-  let
-    outcomes = 
-      sampleData.ws
-      |> List.map (outcome sampleData.p)
+    sample = model.sample
     numSuccess =
       outcomes
       |> List.sum
     numFailures =
       (List.length outcomes) - numSuccess 
   in
-    { numSuccess = numSuccess
-    , numFailures = numFailures
-    , successLbl = sampleData.successLbl
-    , failureLbl = sampleData.failureLbl
+    { sample | numSuccess = numSuccess
+                 , numFailures = numFailures
     }
 
 
+updateSuccessLbl : String -> Sample -> Sample
+updateSuccessLbl newLbl sample =
+    { sample | successLbl = newLbl }
+
+
+updateFailureLbl : String -> Sample -> Sample
+updateFailureLbl newLbl sample =
+    { sample | failureLbl = newLbl }
+
+
+resetSample : Model -> Model
 resetSample model =
   { model | sample = emptySample model.sample}
         
@@ -181,22 +157,44 @@ resetSample model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    ChangeN input ->
-      let
-        newModel =
-           model 
-            |> updateN input
-            |> updatePlotVisibility
-            |> resetSample
-      in
-        (newModel 
-        -- , samplePlotCmd newModel
+    UseCount ->
+        ({model | statistic = Count}
         , Cmd.none
         )
 
-    UpdateSample sampleData ->
-      ({model | sample = updateSample sampleData}
-      --, samplePlotCmd model.sample
+    UseProp ->
+        ({model | statistic = Proportion}
+        , Cmd.none
+        )
+    ChangeN nData ->
+      ( model
+        |> updateN nData
+        |> resetSample
+      , Cmd.none
+      )
+
+    ChangeP pData ->
+      ( model
+        |> updateP pData
+        |> resetSample
+      , Cmd.none
+      )
+
+
+    ChangeSuccessLbl lbl ->
+      ( { model | sample = model.sample |> updateSuccessLbl lbl}
+      , Cmd.none
+      )
+
+
+    ChangeFailureLbl lbl ->
+      ( { model | sample = model.sample |> updateFailureLbl lbl}
+      , Cmd.none
+      )
+
+
+    UpdateSample ws ->
+      ({model | sample = model |> updateSampleFromOutcome ws}
       , Cmd.none
       )
 
@@ -261,26 +259,42 @@ subscriptions model =
 
 
 -- view helpers
+numSuccessesView model =
+  model.sample.numSuccess 
+    |> String.fromInt 
+    |> makeHtmlText "Count(Success) = "
 
+propSuccessesView model =
+  model.sample.numSuccess 
+    |> \n -> (toFloat n)/(toFloat model.n) 
+    |> roundFloat 3
+    |> String.fromFloat 
+    |> makeHtmlText "Proportion(Success) = "
 
-nEntry = entryView "20" "n" 
+statisticView model =
+  case model.statistic of
+    Count ->
+      numSuccessesView model
 
+    Proportion ->
+      propSuccessesView model
 
-sampleView model =
-  sampleGrid
-    ( nEntry ChangeN model.nData.state )
+    _ ->
+      makeHtmlText "" ""
 
+maybeSampleView : Visibility -> Model -> Html msg
 maybeSampleView visibility model =
   case visibility of
     Shown ->
-      sampleView model
+       sampleGrid 
+        (statisticView  model) 
 
     _ ->
       div [] []  
 
 exampleSample = 
   sampleGrid
-    (makeHtmlText "n: " "20")
+    (makeHtmlText "N(Success) ="  "10")
 
 
 -- debug views
@@ -288,14 +302,13 @@ exampleSample =
 
 debugView model =
     div [] 
-        [ makeHtmlText "Plot Visability: " (model.plotVisibility |> Debug.toString)
-        , Html.br [][]
-        , model.nData.str |> makeHtmlText "n string: "
-        , Html.br [][]
-        , makeHtmlText "nData: " (model.nData |> Debug.toString)
+        [ makeHtmlText "sample: " (model.sample |> Debug.toString)
         , Html.br [][]
         , Html.br [][]
         , makeHtmlText "n: " (model.n |> Debug.toString)
+        , Html.br [][]
+        , Html.br [][]
+        , makeHtmlText "p: " (model.p |> Debug.toString)
         , Html.br [][]
         , Html.br [][]
         ]
@@ -304,5 +317,5 @@ debugView model =
 
 view : Model -> Html Msg
 view model =
-    mainGrid (exampleSingleObservationView) (debugView model)  blankPvalue (exampleSpinner) (sampleView model) blankSample blankDistPlot 
+    mainGrid (exampleSingleObservationView) (debugView model)  blankPvalue (exampleSpinner) (maybeSampleView Shown model) blankSample blankDistPlot 
 

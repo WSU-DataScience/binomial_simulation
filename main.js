@@ -5182,7 +5182,6 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Animation$SpinOnce = {$: 'SpinOnce'};
 var $author$project$Animation$initAnimationConfig = {maxRotation: 2, minRotation: 1, ticksPerPause: 15, ticksPerRotation: 5};
 var $author$project$Animation$NotSpinning = function (a) {
 	return {$: 'NotSpinning', a: a};
@@ -5203,14 +5202,14 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstra
 		status: $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed,
 		toggleSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
 	});
-var $author$project$Animation$initModel = {animationOff: false, config: $author$project$Animation$initAnimationConfig, n: 20, nCorrect: true, sample: _List_Nil, spinMode: $author$project$Animation$SpinOnce, splitDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, state: $author$project$Animation$initAnimationState};
+var $author$project$Animation$initModel = {animationOff: false, config: $author$project$Animation$initAnimationConfig, n: 20, nCorrect: true, sample: _List_Nil, splitDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, state: $author$project$Animation$initAnimationState};
 var $author$project$DataEntry$Hidden = {$: 'Hidden'};
 var $author$project$CollectStats$None = {$: 'None'};
-var $author$project$OneSample$NotSelected = {$: 'NotSelected'};
+var $author$project$SingleObservation$NotSelected = {$: 'NotSelected'};
 var $author$project$CollectStats$defaults = {
 	collectNs: _List_fromArray(
-		[1, 10, 100, 1000, 10000, 100000]),
-	minTrialsForPValue: 1000,
+		[10, 100, 1000, 10000, 100000]),
+	minTrialsForPValue: 100,
 	n: 200,
 	p: 0.25,
 	trimAt: 100
@@ -5593,8 +5592,7 @@ var $author$project$CollectStats$initModel = {
 	output: '',
 	p: $author$project$CollectStats$defaults.p,
 	pValue: $elm$core$Maybe$Nothing,
-	pulldown: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState,
-	statistic: $author$project$OneSample$NotSelected,
+	statistic: $author$project$SingleObservation$NotSelected,
 	tail: $author$project$CollectStats$None,
 	trials: 0,
 	xData: $author$project$SingleObservation$initFloat,
@@ -5603,17 +5601,16 @@ var $author$project$CollectStats$initModel = {
 var $author$project$OneSample$emptySample = function (sampleData) {
 	return {failureLbl: sampleData.failureLbl, numFailures: 0, numSuccess: 0, successLbl: sampleData.successLbl};
 };
-var $author$project$DataEntry$initInt = {state: $author$project$DataEntry$Blank, str: '', val: $elm$core$Maybe$Nothing};
 var $author$project$OneSample$initSampleData = {failureLbl: 'Failure', p: 0.25, successLbl: 'Success', ws: _List_Nil};
 var $author$project$OneSample$initModel = {
 	n: 20,
-	nData: $author$project$DataEntry$initInt,
 	p: 0.25,
-	plotVisibility: $author$project$DataEntry$Hidden,
-	sample: $author$project$OneSample$emptySample($author$project$OneSample$initSampleData)
+	sample: $author$project$OneSample$emptySample($author$project$OneSample$initSampleData),
+	statistic: $author$project$SingleObservation$NotSelected
 };
+var $author$project$DataEntry$initInt = {state: $author$project$DataEntry$Blank, str: '', val: $elm$core$Maybe$Nothing};
 var $author$project$SingleObservation$initLbl = {state: $author$project$DataEntry$Blank, str: ''};
-var $author$project$SingleObservation$initModel = {failureLbl: $author$project$SingleObservation$initLbl, pData: $author$project$SingleObservation$initFloat, successLbl: $author$project$SingleObservation$initLbl};
+var $author$project$SingleObservation$initModel = {failureLbl: $author$project$SingleObservation$initLbl, nData: $author$project$DataEntry$initInt, pData: $author$project$SingleObservation$initFloat, pulldown: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, statistic: $author$project$SingleObservation$NotSelected, successLbl: $author$project$SingleObservation$initLbl};
 var $author$project$Spinner$initModel = {currentOutcome: '', failureLbl: '', handLocation: 0.125, p: 0.25, successLbl: '', visibility: $author$project$DataEntry$Hidden};
 var $author$project$Main$initModel = {animation: $author$project$Animation$initModel, collect: $author$project$CollectStats$initModel, debug: false, sample: $author$project$OneSample$initModel, singleObservation: $author$project$SingleObservation$initModel, spinner: $author$project$Spinner$initModel};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -5624,11 +5621,11 @@ var $author$project$Main$init = function (_v0) {
 var $author$project$Main$AnimationMsg = function (a) {
 	return {$: 'AnimationMsg', a: a};
 };
-var $author$project$CollectStats$ChangePulldown = function (a) {
+var $author$project$SingleObservation$ChangePulldown = function (a) {
 	return {$: 'ChangePulldown', a: a};
 };
-var $author$project$Main$CollectMsg = function (a) {
-	return {$: 'CollectMsg', a: a};
+var $author$project$Main$SingleObservationMsg = function (a) {
+	return {$: 'SingleObservationMsg', a: a};
 };
 var $author$project$Animation$SplitMsg = function (a) {
 	return {$: 'SplitMsg', a: a};
@@ -6412,8 +6409,8 @@ var $author$project$Main$subscriptions = function (model) {
 			A2($elm$core$Basics$composeL, $author$project$Main$AnimationMsg, $author$project$Animation$SplitMsg)),
 			A2(
 			$rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions,
-			model.collect.pulldown,
-			A2($elm$core$Basics$composeL, $author$project$Main$CollectMsg, $author$project$CollectStats$ChangePulldown))
+			model.singleObservation.pulldown,
+			A2($elm$core$Basics$composeL, $author$project$Main$SingleObservationMsg, $author$project$SingleObservation$ChangePulldown))
 		]);
 	var _v0 = model.animation.state;
 	if (_v0.$ === 'NotSpinning') {
@@ -6429,11 +6426,14 @@ var $author$project$Main$subscriptions = function (model) {
 				baseBatch));
 	}
 };
+var $author$project$Main$CollectMsg = function (a) {
+	return {$: 'CollectMsg', a: a};
+};
+var $author$project$CollectStats$OneNewStatistic = function (a) {
+	return {$: 'OneNewStatistic', a: a};
+};
 var $author$project$Main$SpinnerMsg = function (a) {
 	return {$: 'SpinnerMsg', a: a};
-};
-var $author$project$Animation$UpdateN = function (a) {
-	return {$: 'UpdateN', a: a};
 };
 var $author$project$CollectStats$UpdateN = function (a) {
 	return {$: 'UpdateN', a: a};
@@ -6441,6 +6441,8 @@ var $author$project$CollectStats$UpdateN = function (a) {
 var $author$project$CollectStats$UpdateP = function (a) {
 	return {$: 'UpdateP', a: a};
 };
+var $author$project$CollectStats$UseCount = {$: 'UseCount'};
+var $author$project$CollectStats$UseProp = {$: 'UseProp'};
 var $gicentre$elm_vegalite$VegaLite$Quantitative = {$: 'Quantitative'};
 var $gicentre$elm_vegalite$VegaLite$X = {$: 'X'};
 var $gicentre$elm_vegalite$VegaLite$Y = {$: 'Y'};
@@ -7175,6 +7177,8 @@ var $gicentre$elm_vegalite$VegaLite$mark = F2(
 		}
 	});
 var $gicentre$elm_vegalite$VegaLite$bar = $gicentre$elm_vegalite$VegaLite$mark($gicentre$elm_vegalite$VegaLite$Bar);
+var $gicentre$elm_vegalite$VegaLite$Circle = {$: 'Circle'};
+var $gicentre$elm_vegalite$VegaLite$circle = $gicentre$elm_vegalite$VegaLite$mark($gicentre$elm_vegalite$VegaLite$Circle);
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -8506,11 +8510,6 @@ var $gicentre$elm_vegalite$VegaLite$color = function (markProps) {
 			$elm$json$Json$Encode$object(
 				A2($elm$core$List$concatMap, $gicentre$elm_vegalite$VegaLite$markChannelProperty, markProps))));
 };
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $gicentre$elm_vegalite$VegaLite$dataColumn = F2(
 	function (colName, data) {
 		switch (data.$) {
@@ -8677,6 +8676,11 @@ var $gicentre$elm_vegalite$VegaLite$formatProperty = function (fmt) {
 				]);
 	}
 };
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -8757,6 +8761,73 @@ var $gicentre$elm_vegalite$VegaLite$dataFromColumns = F2(
 							A2($elm$core$List$concatMap, $gicentre$elm_vegalite$VegaLite$formatProperty, fmts)))
 					])));
 	});
+var $author$project$CollectStats$combineDistColumns = F2(
+	function (pair, columns) {
+		var _v0 = columns;
+		var oldXs = _v0.a;
+		var oldYs = _v0.b;
+		var _v1 = pair;
+		var newX = _v1.a;
+		var newY = _v1.b;
+		return _Utils_Tuple2(
+			A2($elm$core$List$cons, newX, oldXs),
+			A2($elm$core$List$cons, newY, oldYs));
+	});
+var $elm$core$Tuple$mapBoth = F3(
+	function (funcA, funcB, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			funcA(x),
+			funcB(y));
+	});
+var $author$project$CollectStats$distColumns = function (yDict) {
+	return A3(
+		$elm$core$Tuple$mapBoth,
+		$elm$core$List$map($elm$core$Basics$toFloat),
+		$elm$core$List$map($elm$core$Basics$toFloat),
+		A3(
+			$elm$core$List$foldl,
+			$author$project$CollectStats$combineDistColumns,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			$elm$core$Dict$toList(yDict)));
+};
+var $gicentre$elm_vegalite$VegaLite$DNumbers = function (a) {
+	return {$: 'DNumbers', a: a};
+};
+var $gicentre$elm_vegalite$VegaLite$doNums = $gicentre$elm_vegalite$VegaLite$DNumbers;
+var $author$project$CollectStats$countPairToDots = function (pair) {
+	var _v0 = pair;
+	var x = _v0.a;
+	var cnt = _v0.b;
+	var ys = A2($elm$core$List$range, 1, cnt);
+	var xs = A2($elm$core$List$repeat, cnt, x);
+	return _Utils_Tuple2(xs, ys);
+};
+var $author$project$CollectStats$combineDotColumns = F2(
+	function (nextPair, columns) {
+		var _v0 = columns;
+		var oldXs = _v0.a;
+		var oldYs = _v0.b;
+		var _v1 = $author$project$CollectStats$countPairToDots(nextPair);
+		var newXs = _v1.a;
+		var newYs = _v1.b;
+		return _Utils_Tuple2(
+			_Utils_ap(newXs, oldXs),
+			_Utils_ap(newYs, oldYs));
+	});
+var $author$project$CollectStats$dotColumns = function (yDict) {
+	var countList = $elm$core$Dict$toList(yDict);
+	return A3(
+		$elm$core$Tuple$mapBoth,
+		$elm$core$List$map($elm$core$Basics$toFloat),
+		$elm$core$List$map($elm$core$Basics$toFloat),
+		A3(
+			$elm$core$List$foldl,
+			$author$project$CollectStats$combineDotColumns,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			countList));
+};
 var $gicentre$elm_vegalite$VegaLite$VLEncoding = {$: 'VLEncoding'};
 var $gicentre$elm_vegalite$VegaLite$encoding = function (channels) {
 	return _Utils_Tuple2(
@@ -9011,6 +9082,19 @@ var $gicentre$elm_vegalite$VegaLite$MString = function (a) {
 	return {$: 'MString', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$mStr = $gicentre$elm_vegalite$VegaLite$MString;
+var $author$project$CollectStats$updateMax = F2(
+	function (pair, currentMax) {
+		var _v0 = pair;
+		var newY = _v0.b;
+		return A2($elm$core$Basics$max, newY, currentMax);
+	});
+var $author$project$CollectStats$maxHeight = function (yDict) {
+	return A3(
+		$elm$core$List$foldl,
+		$author$project$CollectStats$updateMax,
+		0,
+		$elm$core$Dict$toList(yDict));
+};
 var $gicentre$elm_vegalite$VegaLite$Numbers = function (a) {
 	return {$: 'Numbers', a: a};
 };
@@ -9029,6 +9113,10 @@ var $gicentre$elm_vegalite$VegaLite$PName = function (a) {
 	return {$: 'PName', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$pName = $gicentre$elm_vegalite$VegaLite$PName;
+var $gicentre$elm_vegalite$VegaLite$PScale = function (a) {
+	return {$: 'PScale', a: a};
+};
+var $gicentre$elm_vegalite$VegaLite$pScale = $gicentre$elm_vegalite$VegaLite$PScale;
 var $gicentre$elm_vegalite$VegaLite$Latitude = {$: 'Latitude'};
 var $gicentre$elm_vegalite$VegaLite$Latitude2 = {$: 'Latitude2'};
 var $gicentre$elm_vegalite$VegaLite$Longitude = {$: 'Longitude'};
@@ -9657,6 +9745,10 @@ var $gicentre$elm_vegalite$VegaLite$position = F2(
 							A2($elm$core$List$map, $gicentre$elm_vegalite$VegaLite$positionChannelProperty, pDefs))));
 		}
 	});
+var $gicentre$elm_vegalite$VegaLite$SDomain = function (a) {
+	return {$: 'SDomain', a: a};
+};
+var $gicentre$elm_vegalite$VegaLite$scDomain = $gicentre$elm_vegalite$VegaLite$SDomain;
 var $gicentre$elm_vegalite$VegaLite$TFormat = function (a) {
 	return {$: 'TFormat', a: a};
 };
@@ -9669,7 +9761,6 @@ var $gicentre$elm_vegalite$VegaLite$TName = function (a) {
 	return {$: 'TName', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$tName = $gicentre$elm_vegalite$VegaLite$TName;
-var $elm$core$Debug$toString = _Debug_toString;
 var $gicentre$elm_vegalite$VegaLite$toVegaLite = function (spec) {
 	return $elm$json$Json$Encode$object(
 		A2(
@@ -10245,16 +10336,6 @@ var $author$project$Binomial$twoTailLimits = F2(
 		var diff = (_Utils_cmp(value, mean) < 1) ? (mean - value) : (value - mean);
 		return _Utils_Tuple2(mean - diff, mean + diff);
 	});
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var $gicentre$elm_vegalite$VegaLite$VLWidth = {$: 'VLWidth'};
 var $gicentre$elm_vegalite$VegaLite$width = function (w) {
 	return _Utils_Tuple2(
@@ -10262,32 +10343,6 @@ var $gicentre$elm_vegalite$VegaLite$width = function (w) {
 		$elm$json$Json$Encode$float(w));
 };
 var $author$project$CollectStats$distPlot = function (model) {
-	var ys = A2(
-		$elm$core$List$map,
-		A2(
-			$elm$core$Basics$composeR,
-			$elm$core$Basics$toFloat,
-			function (x) {
-				return x / model.trials;
-			}),
-		$elm$core$Dict$values(model.ys));
-	var xs = function () {
-		var cnts = A2(
-			$elm$core$List$map,
-			$elm$core$Basics$toFloat,
-			$elm$core$Dict$keys(model.ys));
-		var _v7 = model.statistic;
-		if (_v7.$ === 'Proportion') {
-			return A2(
-				$elm$core$List$map,
-				function (x) {
-					return x / model.n;
-				},
-				cnts);
-		} else {
-			return cnts;
-		}
-	}();
 	var selectedEnc = A2(
 		$elm$core$Basics$composeL,
 		A2(
@@ -10335,32 +10390,39 @@ var $author$project$CollectStats$distPlot = function (model) {
 					$gicentre$elm_vegalite$VegaLite$mStr('red'),
 					$gicentre$elm_vegalite$VegaLite$mLegend(_List_Nil)
 				])));
+	var sd = A2($author$project$Binomial$sdBinom, model.n, model.p);
 	var mean = A2($author$project$Binomial$meanBinom, model.n, model.p);
+	var maxY = A2(
+		$elm$core$Basics$max,
+		100.0,
+		$author$project$CollectStats$maxHeight(model.ys));
+	var isLarge = model.trials > 5000;
+	var mark = isLarge ? $gicentre$elm_vegalite$VegaLite$bar : $gicentre$elm_vegalite$VegaLite$circle;
 	var expr = function () {
-		var _v0 = _Utils_Tuple2(model.tail, model.xData.val);
-		if (_v0.b.$ === 'Nothing') {
-			var _v1 = _v0.b;
+		var _v2 = _Utils_Tuple2(model.tail, model.xData.val);
+		if (_v2.b.$ === 'Nothing') {
+			var _v3 = _v2.b;
 			return 'false';
 		} else {
-			switch (_v0.a.$) {
+			switch (_v2.a.$) {
 				case 'None':
-					var _v2 = _v0.a;
+					var _v4 = _v2.a;
 					return 'false';
 				case 'Left':
-					var _v3 = _v0.a;
-					var limit = _v0.b.a;
+					var _v5 = _v2.a;
+					var limit = _v2.b.a;
 					return 'datum.X <= ' + $elm$core$String$fromFloat(limit);
 				case 'Right':
-					var _v4 = _v0.a;
-					var limit = _v0.b.a;
+					var _v6 = _v2.a;
+					var limit = _v2.b.a;
 					return 'datum.X >= ' + $elm$core$String$fromFloat(limit);
 				default:
-					var _v5 = _v0.a;
-					var limit = _v0.b.a;
-					var _v6 = A2($author$project$Binomial$twoTailLimits, mean, limit);
-					var lower = _v6.a;
-					var upper = _v6.b;
-					return _Utils_eq(mean, limit) ? 'true' : ('datum.X <= ' + ($elm$core$Debug$toString(lower) + (' || ' + ('datum.X >= ' + $elm$core$Debug$toString(upper)))));
+					var _v7 = _v2.a;
+					var limit = _v2.b.a;
+					var _v8 = A2($author$project$Binomial$twoTailLimits, mean, limit);
+					var lower = _v8.a;
+					var upper = _v8.b;
+					return _Utils_eq(mean, limit) ? 'true' : ('datum.X <= ' + ($elm$core$String$fromFloat(lower) + (' || ' + ('datum.X >= ' + $elm$core$String$fromFloat(upper)))));
 			}
 		}
 	}();
@@ -10369,6 +10431,27 @@ var $author$project$CollectStats$distPlot = function (model) {
 		$gicentre$elm_vegalite$VegaLite$transform,
 		$gicentre$elm_vegalite$VegaLite$filter(
 			$gicentre$elm_vegalite$VegaLite$fiExpr(expr)));
+	var _v0 = isLarge ? $author$project$CollectStats$distColumns(model.ys) : $author$project$CollectStats$dotColumns(model.ys);
+	var xs = _v0.a;
+	var ys = _v0.b;
+	var d = A2(
+		$elm$core$Basics$composeL,
+		A2(
+			$elm$core$Basics$composeL,
+			$gicentre$elm_vegalite$VegaLite$dataFromColumns(_List_Nil),
+			A2(
+				$gicentre$elm_vegalite$VegaLite$dataColumn,
+				'X',
+				$gicentre$elm_vegalite$VegaLite$nums(xs))),
+		A2(
+			$gicentre$elm_vegalite$VegaLite$dataColumn,
+			'P(X)',
+			$gicentre$elm_vegalite$VegaLite$nums(ys)));
+	var _v1 = _Utils_Tuple2(
+		(_Utils_cmp(model.n, $author$project$CollectStats$defaults.trimAt) < 0) ? 0.0 : (mean - (4 * sd)),
+		(_Utils_cmp(model.n, $author$project$CollectStats$defaults.trimAt) < 0) ? model.n : (mean + (4 * sd)));
+	var minX = _v1.a;
+	var maxX = _v1.b;
 	var encPMF = A2(
 		$elm$core$Basics$composeL,
 		A2(
@@ -10382,7 +10465,15 @@ var $author$project$CollectStats$distPlot = function (model) {
 					_List_fromArray(
 						[
 							$gicentre$elm_vegalite$VegaLite$pName('X'),
-							$gicentre$elm_vegalite$VegaLite$pMType($gicentre$elm_vegalite$VegaLite$Quantitative)
+							$gicentre$elm_vegalite$VegaLite$pMType($gicentre$elm_vegalite$VegaLite$Quantitative),
+							$gicentre$elm_vegalite$VegaLite$pScale(
+							_List_fromArray(
+								[
+									$gicentre$elm_vegalite$VegaLite$scDomain(
+									$gicentre$elm_vegalite$VegaLite$doNums(
+										_List_fromArray(
+											[minX, maxX])))
+								]))
 						]))),
 			A2(
 				$gicentre$elm_vegalite$VegaLite$position,
@@ -10391,7 +10482,15 @@ var $author$project$CollectStats$distPlot = function (model) {
 					[
 						$gicentre$elm_vegalite$VegaLite$pName('P(X)'),
 						$gicentre$elm_vegalite$VegaLite$pAggregate($gicentre$elm_vegalite$VegaLite$opSum),
-						$gicentre$elm_vegalite$VegaLite$pMType($gicentre$elm_vegalite$VegaLite$Quantitative)
+						$gicentre$elm_vegalite$VegaLite$pMType($gicentre$elm_vegalite$VegaLite$Quantitative),
+						$gicentre$elm_vegalite$VegaLite$pScale(
+						_List_fromArray(
+							[
+								$gicentre$elm_vegalite$VegaLite$scDomain(
+								$gicentre$elm_vegalite$VegaLite$doNums(
+									_List_fromArray(
+										[0.0, maxY])))
+							]))
 					]))),
 		$gicentre$elm_vegalite$VegaLite$tooltips(
 			_List_fromArray(
@@ -10408,19 +10507,6 @@ var $author$project$CollectStats$distPlot = function (model) {
 						$gicentre$elm_vegalite$VegaLite$tFormat('.3f')
 					])
 				])));
-	var d = A2(
-		$elm$core$Basics$composeL,
-		A2(
-			$elm$core$Basics$composeL,
-			$gicentre$elm_vegalite$VegaLite$dataFromColumns(_List_Nil),
-			A2(
-				$gicentre$elm_vegalite$VegaLite$dataColumn,
-				'X',
-				$gicentre$elm_vegalite$VegaLite$nums(xs))),
-		A2(
-			$gicentre$elm_vegalite$VegaLite$dataColumn,
-			'P(X)',
-			$gicentre$elm_vegalite$VegaLite$nums(ys)));
 	return $gicentre$elm_vegalite$VegaLite$toVegaLite(
 		_List_fromArray(
 			[
@@ -10433,13 +10519,13 @@ var $author$project$CollectStats$distPlot = function (model) {
 						$gicentre$elm_vegalite$VegaLite$asSpec(
 						_List_fromArray(
 							[
-								$gicentre$elm_vegalite$VegaLite$bar(_List_Nil),
+								mark(_List_Nil),
 								encPMF(_List_Nil)
 							])),
 						$gicentre$elm_vegalite$VegaLite$asSpec(
 						_List_fromArray(
 							[
-								$gicentre$elm_vegalite$VegaLite$bar(_List_Nil),
+								mark(_List_Nil),
 								selectedEnc(_List_Nil),
 								trans(_List_Nil)
 							]))
@@ -10452,7 +10538,10 @@ var $author$project$Main$distPlotCmd = function (model) {
 		$author$project$CollectStats$distPlot(model));
 };
 var $elm$core$Platform$Cmd$map = _Platform_map;
-var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$OneSample$outcome = F2(
+	function (p, w) {
+		return (_Utils_cmp(w, p) < 0) ? 1 : 0;
+	});
 var $gicentre$elm_vegalite$VegaLite$Nominal = {$: 'Nominal'};
 var $gicentre$elm_vegalite$VegaLite$GridOpacity = function (a) {
 	return {$: 'GridOpacity', a: a};
@@ -12347,10 +12436,6 @@ var $gicentre$elm_vegalite$VegaLite$configure = function (configs) {
 		$gicentre$elm_vegalite$VegaLite$VLConfig,
 		$elm$json$Json$Encode$object(configs));
 };
-var $gicentre$elm_vegalite$VegaLite$DNumbers = function (a) {
-	return {$: 'DNumbers', a: a};
-};
-var $gicentre$elm_vegalite$VegaLite$doNums = $gicentre$elm_vegalite$VegaLite$DNumbers;
 var $gicentre$elm_vegalite$VegaLite$MmType = function (a) {
 	return {$: 'MmType', a: a};
 };
@@ -12359,15 +12444,7 @@ var $gicentre$elm_vegalite$VegaLite$MName = function (a) {
 	return {$: 'MName', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$mName = $gicentre$elm_vegalite$VegaLite$MName;
-var $gicentre$elm_vegalite$VegaLite$PScale = function (a) {
-	return {$: 'PScale', a: a};
-};
-var $gicentre$elm_vegalite$VegaLite$pScale = $gicentre$elm_vegalite$VegaLite$PScale;
 var $author$project$OneSample$samplePlotConfig = {height: 100, lblAngle: 0, width: 200};
-var $gicentre$elm_vegalite$VegaLite$SDomain = function (a) {
-	return {$: 'SDomain', a: a};
-};
-var $gicentre$elm_vegalite$VegaLite$scDomain = $gicentre$elm_vegalite$VegaLite$SDomain;
 var $gicentre$elm_vegalite$VegaLite$Strings = function (a) {
 	return {$: 'Strings', a: a};
 };
@@ -12475,7 +12552,6 @@ var $author$project$Main$samplePlotCmd = function (model) {
 	return $author$project$Main$samplePlotToJS(
 		A2($author$project$OneSample$samplePlot, n, sample));
 };
-var $author$project$Animation$SpinNTimes = {$: 'SpinNTimes'};
 var $author$project$Animation$NewAngleProb = function (a) {
 	return {$: 'NewAngleProb', a: a};
 };
@@ -12703,51 +12779,13 @@ var $author$project$Animation$getRandomList = F2(
 			$author$project$Animation$getRandomPair(model));
 	});
 var $author$project$Animation$getRandomAngleRotations = function (model) {
-	var numSpins = function () {
-		var _v0 = model.spinMode;
-		if (_v0.$ === 'SpinOnce') {
-			return 1;
-		} else {
-			return model.n;
-		}
-	}();
 	return A2(
 		$elm$random$Random$generate,
 		$author$project$Animation$NewAngleProb,
-		A2($author$project$Animation$getRandomList, numSpins, model));
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $author$project$Animation$lastLocation = function (outcomes) {
-	var _v0 = A2($elm$core$List$map, $elm$core$Tuple$second, outcomes);
-	if (_v0.b) {
-		var f = _v0.a;
-		return f;
-	} else {
-		return $author$project$Animation$initNotSpinningState.location;
-	}
+		A2($author$project$Animation$getRandomList, model.n, model));
 };
 var $author$project$Animation$Spinning = function (a) {
 	return {$: 'Spinning', a: a};
-};
-var $author$project$Animation$getPosition = function (model) {
-	var position = function () {
-		var _v0 = model.state;
-		switch (_v0.$) {
-			case 'Paused':
-				var s = _v0.a;
-				return s.location;
-			case 'Spinning':
-				var s = _v0.a;
-				return s.location;
-			default:
-				var s = _v0.a;
-				return s.location;
-		}
-	}();
-	return {location: position};
 };
 var $author$project$Animation$getCurrentLocation = function (model) {
 	var _v0 = model.state;
@@ -12756,6 +12794,15 @@ var $author$project$Animation$getCurrentLocation = function (model) {
 			var s = _v0.a;
 			return s.location;
 		case 'Paused':
+			var s = _v0.a;
+			return s.location;
+		case 'NotSpinning':
+			var s = _v0.a;
+			return s.location;
+		case 'UpdateSample':
+			var s = _v0.a;
+			return s.location;
+		case 'UpdateSampleNoAnimation':
 			var s = _v0.a;
 			return s.location;
 		default:
@@ -12770,6 +12817,15 @@ var $author$project$Animation$nextSpinningState = F4(
 		var animationTicks = $elm$core$Basics$round(distToTravel * model.config.ticksPerRotation);
 		return {finalPosition: newOmega, location: currentLocation, propPerTick: distToTravel / animationTicks, spinsLeft: remainingSpins, ticksLeft: animationTicks};
 	});
+var $author$project$Animation$UpdateDist = function (a) {
+	return {$: 'UpdateDist', a: a};
+};
+var $author$project$Animation$updateDist = function (model) {
+	return $author$project$Animation$UpdateDist(
+		{
+			location: $author$project$Animation$getCurrentLocation(model)
+		});
+};
 var $author$project$Animation$nextSpinIfNeeded = F2(
 	function (outcomes, model) {
 		if (outcomes.b) {
@@ -12780,29 +12836,18 @@ var $author$project$Animation$nextSpinIfNeeded = F2(
 			return $author$project$Animation$Spinning(
 				A4($author$project$Animation$nextSpinningState, newRotations, newOmega, rest, model));
 		} else {
-			return $author$project$Animation$NotSpinning(
-				$author$project$Animation$getPosition(model));
+			return $author$project$Animation$updateDist(model);
 		}
 	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $author$project$Animation$storeAllObservation = F2(
 	function (outcomes, model) {
 		return _Utils_update(
 			model,
 			{sample: outcomes});
-	});
-var $author$project$Animation$full = function (model) {
-	return _Utils_cmp(
-		$elm$core$List$length(model.sample),
-		model.n) > -1;
-};
-var $author$project$Animation$storeOneObservation = F2(
-	function (outcome, model) {
-		var currentSample = $author$project$Animation$full(model) ? _List_Nil : model.sample;
-		return _Utils_update(
-			model,
-			{
-				sample: A2($elm$core$List$cons, outcome, currentSample)
-			});
 	});
 var $author$project$Animation$Paused = function (a) {
 	return {$: 'Paused', a: a};
@@ -12817,11 +12862,12 @@ var $author$project$Animation$decrementSpinTickCount = function (s) {
 		s,
 		{ticksLeft: s.ticksLeft - 1});
 };
-var $author$project$Animation$pause = F2(
-	function (config, s) {
-		return $author$project$Animation$Paused(
-			{location: s.finalPosition, spinsLeft: s.spinsLeft, ticksLeft: config.ticksPerPause});
-	});
+var $author$project$Animation$notSpinning = function (state) {
+	return $author$project$Animation$NotSpinning(state);
+};
+var $author$project$Animation$pause = function (state) {
+	return $author$project$Animation$Paused(state);
+};
 var $author$project$Animation$shiftHand = function (state) {
 	return _Utils_update(
 		state,
@@ -12839,11 +12885,40 @@ var $author$project$Animation$tickCount = function (state) {
 			return 0;
 	}
 };
+var $author$project$Animation$UpdateSample = function (a) {
+	return {$: 'UpdateSample', a: a};
+};
+var $author$project$Animation$updateSample = F2(
+	function (config, s) {
+		return $author$project$Animation$UpdateSample(
+			{location: s.finalPosition, spinsLeft: s.spinsLeft, ticksLeft: config.ticksPerPause});
+	});
 var $author$project$Animation$updateAnimationOnTick = function (model) {
 	var _v0 = _Utils_Tuple2(
 		model.state,
 		$author$project$Animation$tickCount(model.state));
 	switch (_v0.a.$) {
+		case 'UpdateSample':
+			var s = _v0.a.a;
+			return _Utils_update(
+				model,
+				{
+					state: $author$project$Animation$pause(s)
+				});
+		case 'UpdateSampleNoAnimation':
+			var s = _v0.a.a;
+			return _Utils_update(
+				model,
+				{
+					state: $author$project$Animation$updateDist(model)
+				});
+		case 'UpdateDist':
+			var s = _v0.a.a;
+			return _Utils_update(
+				model,
+				{
+					state: $author$project$Animation$notSpinning(s)
+				});
 		case 'Paused':
 			if (!_v0.b) {
 				var s = _v0.a.a;
@@ -12864,14 +12939,12 @@ var $author$project$Animation$updateAnimationOnTick = function (model) {
 		case 'Spinning':
 			if (!_v0.b) {
 				var s = _v0.a.a;
-				return A2(
-					$author$project$Animation$storeOneObservation,
-					s.finalPosition,
-					_Utils_update(
-						model,
-						{
-							state: A2($author$project$Animation$pause, model.config, s)
-						}));
+				return _Utils_update(
+					model,
+					{
+						sample: A2($elm$core$List$cons, s.finalPosition, model.sample),
+						state: A2($author$project$Animation$updateSample, model.config, s)
+					});
 			} else {
 				var s = _v0.a.a;
 				return _Utils_update(
@@ -12886,13 +12959,25 @@ var $author$project$Animation$updateAnimationOnTick = function (model) {
 			return model;
 	}
 };
+var $author$project$Animation$UpdateSampleNoAnimation = function (a) {
+	return {$: 'UpdateSampleNoAnimation', a: a};
+};
+var $author$project$Animation$lastLocation = function (outcomes) {
+	var _v0 = A2($elm$core$List$map, $elm$core$Tuple$second, outcomes);
+	if (_v0.b) {
+		var f = _v0.a;
+		return f;
+	} else {
+		return $author$project$Animation$initNotSpinningState.location;
+	}
+};
 var $author$project$Animation$updateWithoutAnimation = F2(
 	function (outcomes, model) {
 		var location = $author$project$Animation$lastLocation(outcomes);
 		return _Utils_update(
 			model,
 			{
-				state: $author$project$Animation$NotSpinning(
+				state: $author$project$Animation$UpdateSampleNoAnimation(
 					{location: location})
 			});
 	});
@@ -12920,72 +13005,36 @@ var $author$project$Animation$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
-			case 'SetSpinOnce':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{spinMode: $author$project$Animation$SpinOnce}),
-					$elm$core$Platform$Cmd$none);
-			case 'SetSpinNTimes':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{spinMode: $author$project$Animation$SpinNTimes}),
-					$elm$core$Platform$Cmd$none);
 			case 'NewAngleProb':
 				var outcomes = msg.a;
-				var _v2 = _Utils_Tuple2(model.animationOff, model.spinMode);
-				if (!_v2.a) {
-					if (_v2.b.$ === 'SpinOnce') {
-						var _v3 = _v2.b;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									state: A2($author$project$Animation$nextSpinIfNeeded, outcomes, model)
-								}),
-							$elm$core$Platform$Cmd$none);
-					} else {
-						var _v4 = _v2.b;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									sample: _List_Nil,
-									state: A2($author$project$Animation$nextSpinIfNeeded, outcomes, model)
-								}),
-							$elm$core$Platform$Cmd$none);
-					}
-				} else {
-					if (_v2.b.$ === 'SpinOnce') {
-						var _v5 = _v2.b;
-						return _Utils_Tuple2(
-							A2(
-								$author$project$Animation$storeOneObservation,
-								$author$project$Animation$lastLocation(outcomes),
-								A2($author$project$Animation$updateWithoutAnimation, outcomes, model)),
-							$elm$core$Platform$Cmd$none);
-					} else {
-						var _v6 = _v2.b;
-						return _Utils_Tuple2(
-							A2(
-								$author$project$Animation$storeAllObservation,
-								A2($elm$core$List$map, $elm$core$Tuple$second, outcomes),
-								A2($author$project$Animation$updateWithoutAnimation, outcomes, model)),
-							$elm$core$Platform$Cmd$none);
-					}
-				}
-			case 'UpdateN':
-				var nData = msg.a;
-				var _v7 = nData.state;
-				if (_v7.$ === 'Correct') {
-					var n = A2($elm$core$Maybe$withDefault, 20, nData.val);
-					var animationOff = n > 50;
-					var spinMode = animationOff ? $author$project$Animation$SpinNTimes : model.spinMode;
+				var _v2 = model.animationOff;
+				if (!_v2) {
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{animationOff: animationOff, n: n, nCorrect: true, sample: _List_Nil, spinMode: spinMode}),
+							{
+								sample: _List_Nil,
+								state: A2($author$project$Animation$nextSpinIfNeeded, outcomes, model)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(
+						A2(
+							$author$project$Animation$storeAllObservation,
+							A2($elm$core$List$map, $elm$core$Tuple$second, outcomes),
+							A2($author$project$Animation$updateWithoutAnimation, outcomes, model)),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'UpdateN':
+				var nData = msg.a;
+				var _v3 = nData.state;
+				if (_v3.$ === 'Correct') {
+					var n = A2($elm$core$Maybe$withDefault, 20, nData.val);
+					var animationOff = n > 50;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animationOff: animationOff, n: n, nCorrect: true, sample: _List_Nil}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(
@@ -12996,20 +13045,19 @@ var $author$project$Animation$update = F2(
 				}
 			default:
 				var isOff = msg.a;
-				var spinMode = isOff ? $author$project$Animation$SpinNTimes : model.spinMode;
 				var nTooLarge = model.n > 50;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationOff: isOff || nTooLarge, spinMode: spinMode}),
+						{animationOff: isOff || nTooLarge}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$OneSample$Count = {$: 'Count'};
+var $author$project$SingleObservation$Count = {$: 'Count'};
 var $author$project$CollectStats$NewStatistics = function (a) {
 	return {$: 'NewStatistics', a: a};
 };
-var $author$project$OneSample$Proportion = {$: 'Proportion'};
+var $author$project$SingleObservation$Proportion = {$: 'Proportion'};
 var $author$project$CollectStats$resetPValue = function (model) {
 	return _Utils_update(
 		model,
@@ -13137,6 +13185,7 @@ var $author$project$CollectStats$addCounts = F4(
 		}
 	});
 var $author$project$DataEntry$Correct = {$: 'Correct'};
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$CollectStats$startingPValue = function (model) {
 	var canHavePValue = _Utils_eq(model.xData.state, $author$project$DataEntry$Correct) && (!_Utils_eq(model.tail, $author$project$CollectStats$None));
 	return canHavePValue ? $elm$core$Maybe$Just(0) : $elm$core$Maybe$Nothing;
@@ -13655,12 +13704,26 @@ var $author$project$CollectStats$update = F2(
 							$elm$random$Random$list,
 							n,
 							A2($elm$random$Random$float, 0, 1))));
+			case 'OneNewStatistic':
+				var numSuccess = msg.a;
+				var newYs = A2($author$project$CollectStats$updateY, numSuccess, model.ys);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{trials: model.trials + 1, ys: newYs}),
+					$elm$core$Platform$Cmd$none);
 			case 'NewStatistics':
 				var ws = msg.a;
 				return _Utils_Tuple2(
 					$author$project$CollectStats$updatePValue(
 						A2($author$project$CollectStats$updateYs, ws, model)),
 					$elm$core$Platform$Cmd$none);
+			case 'Reset':
+				var newModel = $author$project$CollectStats$resetTail(
+					$author$project$CollectStats$resetX(
+						$author$project$CollectStats$resetPValue(
+							$author$project$CollectStats$resetYs(model))));
+				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
 			case 'UpdateP':
 				var pData = msg.a;
 				var newModel = function () {
@@ -13669,14 +13732,15 @@ var $author$project$CollectStats$update = F2(
 						return $author$project$CollectStats$resetTail(
 							$author$project$CollectStats$resetX(
 								$author$project$CollectStats$resetPValue(
-									$author$project$CollectStats$updateBinomGen(
-										$author$project$CollectStats$resetYs(
-											A2($author$project$CollectStats$updateP, pData, model))))));
+									$author$project$CollectStats$resetYs(
+										A2($author$project$CollectStats$updateP, pData, model)))));
 					} else {
 						return model;
 					}
 				}();
-				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					$author$project$CollectStats$updateBinomGen(newModel),
+					$elm$core$Platform$Cmd$none);
 			case 'UpdateN':
 				var nData = msg.a;
 				var newModel = function () {
@@ -13685,20 +13749,14 @@ var $author$project$CollectStats$update = F2(
 						return $author$project$CollectStats$resetTail(
 							$author$project$CollectStats$resetX(
 								$author$project$CollectStats$resetPValue(
-									$author$project$CollectStats$updateBinomGen(
-										$author$project$CollectStats$resetYs(
-											A2($author$project$CollectStats$updateN, nData, model))))));
+									$author$project$CollectStats$resetYs(
+										A2($author$project$CollectStats$updateN, nData, model)))));
 					} else {
 						return model;
 					}
 				}();
-				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
-			case 'ChangePulldown':
-				var state = msg.a;
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{pulldown: state}),
+					$author$project$CollectStats$updateBinomGen(newModel),
 					$elm$core$Platform$Cmd$none);
 			case 'UseCount':
 				return _Utils_Tuple2(
@@ -13709,7 +13767,7 @@ var $author$project$CollectStats$update = F2(
 									$author$project$CollectStats$updateButtonVisibility(
 										_Utils_update(
 											model,
-											{statistic: $author$project$OneSample$Count})))))),
+											{statistic: $author$project$SingleObservation$Count})))))),
 					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
@@ -13720,7 +13778,7 @@ var $author$project$CollectStats$update = F2(
 									$author$project$CollectStats$updateButtonVisibility(
 										_Utils_update(
 											model,
-											{statistic: $author$project$OneSample$Proportion})))))),
+											{statistic: $author$project$SingleObservation$Proportion})))))),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -13731,58 +13789,111 @@ var $author$project$OneSample$resetSample = function (model) {
 			sample: $author$project$OneSample$emptySample(model.sample)
 		});
 };
-var $author$project$OneSample$isNInOfBounds = function (n) {
-	return n > 0;
-};
-var $author$project$OneSample$updateNData = A2($author$project$DataEntry$updateNumeric, $elm$core$String$toInt, $author$project$OneSample$isNInOfBounds);
-var $author$project$OneSample$updateN = F2(
-	function (input, model) {
-		var nData = A2($author$project$OneSample$updateNData, input, model.nData);
+var $author$project$OneSample$updateFailureLbl = F2(
+	function (newLbl, sample) {
 		return _Utils_update(
-			model,
-			{
-				n: A2($elm$core$Maybe$withDefault, 20, nData.val),
-				nData: nData
-			});
+			sample,
+			{failureLbl: newLbl});
 	});
-var $author$project$OneSample$updatePlotVisibility = function (model) {
-	var show = _Utils_eq(model.nData.state, $author$project$DataEntry$Correct);
-	return show ? _Utils_update(
-		model,
-		{plotVisibility: $author$project$DataEntry$Shown}) : _Utils_update(
-		model,
-		{plotVisibility: $author$project$DataEntry$Hidden});
-};
-var $author$project$OneSample$outcome = F2(
-	function (p, w) {
-		return (_Utils_cmp(w, p) < 0) ? 1 : 0;
+var $author$project$OneSample$updateN = F2(
+	function (nData, model) {
+		var _v0 = nData.state;
+		if (_v0.$ === 'Correct') {
+			return _Utils_update(
+				model,
+				{
+					n: A2($elm$core$Maybe$withDefault, $author$project$OneSample$initModel.n, nData.val)
+				});
+		} else {
+			return model;
+		}
 	});
-var $author$project$OneSample$updateSample = function (sampleData) {
-	var outcomes = A2(
-		$elm$core$List$map,
-		$author$project$OneSample$outcome(sampleData.p),
-		sampleData.ws);
-	var numSuccess = $elm$core$List$sum(outcomes);
-	var numFailures = $elm$core$List$length(outcomes) - numSuccess;
-	return {failureLbl: sampleData.failureLbl, numFailures: numFailures, numSuccess: numSuccess, successLbl: sampleData.successLbl};
-};
+var $author$project$OneSample$updateP = F2(
+	function (pData, model) {
+		var _v0 = pData.state;
+		if (_v0.$ === 'Correct') {
+			return _Utils_update(
+				model,
+				{
+					p: A2($elm$core$Maybe$withDefault, $author$project$OneSample$initModel.p, pData.val)
+				});
+		} else {
+			return model;
+		}
+	});
+var $author$project$OneSample$updateSampleFromOutcome = F2(
+	function (ws, model) {
+		var sample = model.sample;
+		var outcomes = A2(
+			$elm$core$List$map,
+			$author$project$OneSample$outcome(model.p),
+			ws);
+		var numSuccess = $elm$core$List$sum(outcomes);
+		var numFailures = $elm$core$List$length(outcomes) - numSuccess;
+		return _Utils_update(
+			sample,
+			{numFailures: numFailures, numSuccess: numSuccess});
+	});
+var $author$project$OneSample$updateSuccessLbl = F2(
+	function (newLbl, sample) {
+		return _Utils_update(
+			sample,
+			{successLbl: newLbl});
+	});
 var $author$project$OneSample$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'ChangeN') {
-			var input = msg.a;
-			var newModel = $author$project$OneSample$resetSample(
-				$author$project$OneSample$updatePlotVisibility(
-					A2($author$project$OneSample$updateN, input, model)));
-			return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
-		} else {
-			var sampleData = msg.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{
-						sample: $author$project$OneSample$updateSample(sampleData)
-					}),
-				$elm$core$Platform$Cmd$none);
+		switch (msg.$) {
+			case 'UseCount':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{statistic: $author$project$SingleObservation$Count}),
+					$elm$core$Platform$Cmd$none);
+			case 'UseProp':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{statistic: $author$project$SingleObservation$Proportion}),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeN':
+				var nData = msg.a;
+				return _Utils_Tuple2(
+					$author$project$OneSample$resetSample(
+						A2($author$project$OneSample$updateN, nData, model)),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeP':
+				var pData = msg.a;
+				return _Utils_Tuple2(
+					$author$project$OneSample$resetSample(
+						A2($author$project$OneSample$updateP, pData, model)),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeSuccessLbl':
+				var lbl = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							sample: A2($author$project$OneSample$updateSuccessLbl, lbl, model.sample)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ChangeFailureLbl':
+				var lbl = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							sample: A2($author$project$OneSample$updateFailureLbl, lbl, model.sample)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var ws = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							sample: A2($author$project$OneSample$updateSampleFromOutcome, ws, model)
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$DataEntry$OtherwiseIncorrect = {$: 'OtherwiseIncorrect'};
@@ -13799,6 +13910,18 @@ var $author$project$SingleObservation$updateLabel = F3(
 				str: thisLbl
 			});
 	});
+var $author$project$SingleObservation$isNInOfBounds = function (n) {
+	return n > 0;
+};
+var $author$project$SingleObservation$updateNData = A2($author$project$DataEntry$updateNumeric, $elm$core$String$toInt, $author$project$SingleObservation$isNInOfBounds);
+var $author$project$SingleObservation$updateN = F2(
+	function (input, model) {
+		return _Utils_update(
+			model,
+			{
+				nData: A2($author$project$SingleObservation$updateNData, input, model.nData)
+			});
+	});
 var $author$project$SingleObservation$isPInOfBounds = function (p) {
 	return (p >= 0) && (p <= 1);
 };
@@ -13806,6 +13929,25 @@ var $author$project$SingleObservation$updatePData = A2($author$project$DataEntry
 var $author$project$SingleObservation$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'ChangePulldown':
+				var state = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{pulldown: state}),
+					$elm$core$Platform$Cmd$none);
+			case 'UseCount':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{statistic: $author$project$SingleObservation$Count}),
+					$elm$core$Platform$Cmd$none);
+			case 'UseProp':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{statistic: $author$project$SingleObservation$Proportion}),
+					$elm$core$Platform$Cmd$none);
 			case 'ChangeSuccessLbl':
 				var lbl = msg.a;
 				return _Utils_Tuple2(
@@ -13824,7 +13966,7 @@ var $author$project$SingleObservation$update = F2(
 							failureLbl: A3($author$project$SingleObservation$updateLabel, lbl, model.successLbl.str, model.failureLbl)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'ChangeP':
 				var text = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -13833,12 +13975,32 @@ var $author$project$SingleObservation$update = F2(
 							pData: A2($author$project$SingleObservation$updatePData, text, model.pData)
 						}),
 					$elm$core$Platform$Cmd$none);
+			default:
+				var text = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$SingleObservation$updateN, text, model),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Spinner$update = F2(
 	function (msg, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
+var $author$project$Main$updateAnimationN = function (model) {
+	var _v0 = model.singleObservation.nData.state;
+	if (_v0.$ === 'Correct') {
+		var oldAnimation = model.animation;
+		var n = A2($elm$core$Maybe$withDefault, 20, model.singleObservation.nData.val);
+		var newAnimation = _Utils_update(
+			oldAnimation,
+			{n: n});
+		return _Utils_update(
+			model,
+			{animation: newAnimation});
+	} else {
+		return model;
+	}
+};
 var $author$project$Main$updateSpinnerLocation = F2(
 	function (location, model) {
 		return _Utils_update(
@@ -13853,17 +14015,18 @@ var $author$project$Main$updateLocation = function (model) {
 			spinner: A2($author$project$Main$updateSpinnerLocation, location, model.spinner)
 		});
 };
+var $author$project$OneSample$ChangeFailureLbl = function (a) {
+	return {$: 'ChangeFailureLbl', a: a};
+};
 var $author$project$Main$updateSampleFailure = function (model) {
 	var _v0 = model.singleObservation.failureLbl.state;
 	if (_v0.$ === 'Correct') {
-		var oldSampleModel = model.sample;
-		var oldSample = oldSampleModel.sample;
-		var newSample = _Utils_update(
-			oldSample,
-			{failureLbl: model.singleObservation.failureLbl.str});
-		var newSampleModel = _Utils_update(
-			oldSampleModel,
-			{sample: newSample});
+		var lbl = model.singleObservation.failureLbl.str;
+		var _v1 = A2(
+			$author$project$OneSample$update,
+			$author$project$OneSample$ChangeFailureLbl(lbl),
+			model.sample);
+		var newSampleModel = _v1.a;
 		return _Utils_update(
 			model,
 			{sample: newSampleModel});
@@ -13871,37 +14034,65 @@ var $author$project$Main$updateSampleFailure = function (model) {
 		return model;
 	}
 };
-var $author$project$OneSample$updateP = F2(
-	function (p, model) {
-		return _Utils_update(
-			model,
-			{
-				p: A2($elm$core$Maybe$withDefault, model.p, p)
-			});
-	});
-var $author$project$Main$updateSampleP = function (model) {
-	var _v0 = model.singleObservation.pData.state;
+var $author$project$OneSample$ChangeN = function (a) {
+	return {$: 'ChangeN', a: a};
+};
+var $author$project$Main$updateSampleN = function (model) {
+	var _v0 = model.singleObservation.nData.state;
 	if (_v0.$ === 'Correct') {
+		var nData = model.singleObservation.nData;
+		var _v1 = A2(
+			$author$project$OneSample$update,
+			$author$project$OneSample$ChangeN(nData),
+			model.sample);
+		var newSample = _v1.a;
 		return _Utils_update(
 			model,
-			{
-				sample: A2($author$project$OneSample$updateP, model.singleObservation.pData.val, model.sample)
-			});
+			{sample: newSample});
 	} else {
 		return model;
 	}
+};
+var $author$project$OneSample$ChangeP = function (a) {
+	return {$: 'ChangeP', a: a};
+};
+var $author$project$Main$updateSampleP = function (model) {
+	var _v0 = model.singleObservation.pData.state;
+	if (_v0.$ === 'Correct') {
+		var pData = model.singleObservation.pData;
+		var _v1 = A2(
+			$author$project$OneSample$update,
+			$author$project$OneSample$ChangeP(pData),
+			model.sample);
+		var newSample = _v1.a;
+		return _Utils_update(
+			model,
+			{sample: newSample});
+	} else {
+		return model;
+	}
+};
+var $author$project$Main$updateSampleStatistic = function (model) {
+	var sampleModel = model.sample;
+	var newSampleModel = _Utils_update(
+		sampleModel,
+		{statistic: model.singleObservation.statistic});
+	return _Utils_update(
+		model,
+		{sample: newSampleModel});
+};
+var $author$project$OneSample$ChangeSuccessLbl = function (a) {
+	return {$: 'ChangeSuccessLbl', a: a};
 };
 var $author$project$Main$updateSampleSuccess = function (model) {
 	var _v0 = model.singleObservation.successLbl.state;
 	if (_v0.$ === 'Correct') {
-		var oldSampleModel = model.sample;
-		var oldSample = oldSampleModel.sample;
-		var newSample = _Utils_update(
-			oldSample,
-			{successLbl: model.singleObservation.successLbl.str});
-		var newSampleModel = _Utils_update(
-			oldSampleModel,
-			{sample: newSample});
+		var lbl = model.singleObservation.successLbl.str;
+		var _v1 = A2(
+			$author$project$OneSample$update,
+			$author$project$OneSample$ChangeSuccessLbl(lbl),
+			model.sample);
+		var newSampleModel = _v1.a;
 		return _Utils_update(
 			model,
 			{sample: newSampleModel});
@@ -13909,30 +14100,13 @@ var $author$project$Main$updateSampleSuccess = function (model) {
 		return model;
 	}
 };
-var $author$project$Main$updateSampleFromObs = function (model) {
-	return $author$project$Main$updateSampleP(
-		$author$project$Main$updateSampleFailure(
-			$author$project$Main$updateSampleSuccess(model)));
+var $author$project$Main$updateSample = function (model) {
+	return $author$project$Main$updateSampleStatistic(
+		$author$project$Main$updateSampleN(
+			$author$project$Main$updateSampleP(
+				$author$project$Main$updateSampleFailure(
+					$author$project$Main$updateSampleSuccess(model)))));
 };
-var $author$project$OneSample$updateCounts = F3(
-	function (numSuccess, numFailures, sample) {
-		return _Utils_update(
-			sample,
-			{numFailures: numFailures, numSuccess: numSuccess});
-	});
-var $author$project$OneSample$updateSampleFromOutcome = F2(
-	function (ws, model) {
-		var outcomes = A2(
-			$elm$core$List$map,
-			$author$project$OneSample$outcome(model.p),
-			ws);
-		var numSuccess = $elm$core$List$sum(outcomes);
-		var numFailures = $elm$core$List$length(outcomes) - numSuccess;
-		var newSample = A3($author$project$OneSample$updateCounts, numSuccess, numFailures, model.sample);
-		return _Utils_update(
-			model,
-			{sample: newSample});
-	});
 var $author$project$Main$updateFailure = F2(
 	function (lbl, model) {
 		return _Utils_update(
@@ -13996,7 +14170,7 @@ var $author$project$Main$updateVisibility = F2(
 			{visibility: visibility});
 	});
 var $author$project$Main$updateSpinnerVisibility = function (model) {
-	var canShow = _Utils_eq(model.singleObservation.successLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.failureLbl.state, $author$project$DataEntry$Correct) && _Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct));
+	var canShow = _Utils_eq(model.singleObservation.successLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.failureLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.nData.state, $author$project$DataEntry$Correct) && (!_Utils_eq(model.singleObservation.statistic, $author$project$SingleObservation$NotSelected)))));
 	var vis = canShow ? $author$project$DataEntry$Shown : $author$project$DataEntry$Hidden;
 	return _Utils_update(
 		model,
@@ -14024,24 +14198,35 @@ var $author$project$Main$update = F2(
 				var newModel = _v1.a;
 				var newCmd = _v1.b;
 				var _v2 = function () {
-					if (soMsg.$ === 'ChangeP') {
-						return A2(
-							$author$project$CollectStats$update,
-							$author$project$CollectStats$UpdateP(newModel.pData),
-							model.collect);
-					} else {
-						return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
+					switch (soMsg.$) {
+						case 'ChangeP':
+							return A2(
+								$author$project$CollectStats$update,
+								$author$project$CollectStats$UpdateP(newModel.pData),
+								model.collect);
+						case 'ChangeN':
+							return A2(
+								$author$project$CollectStats$update,
+								$author$project$CollectStats$UpdateN(newModel.nData),
+								model.collect);
+						case 'UseCount':
+							return A2($author$project$CollectStats$update, $author$project$CollectStats$UseCount, model.collect);
+						case 'UseProp':
+							return A2($author$project$CollectStats$update, $author$project$CollectStats$UseProp, model.collect);
+						default:
+							return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
 					}
 				}();
 				var collectModel = _v2.a;
-				var finalModel = $author$project$Main$updateSampleFromObs(
-					$author$project$Main$updateSpinner(
-						_Utils_update(
-							model,
-							{collect: collectModel, singleObservation: newModel})));
+				var finalModel = $author$project$Main$updateAnimationN(
+					$author$project$Main$updateSample(
+						$author$project$Main$updateSpinner(
+							_Utils_update(
+								model,
+								{collect: collectModel, singleObservation: newModel}))));
 				return _Utils_Tuple2(
 					finalModel,
-					$author$project$Main$samplePlotCmd(finalModel));
+					$author$project$Main$distPlotCmd(finalModel.collect));
 			case 'SpinnerMsg':
 				var sPmsg = msg.a;
 				var _v4 = A2(
@@ -14059,14 +14244,6 @@ var $author$project$Main$update = F2(
 					A2($elm$core$Platform$Cmd$map, $author$project$Main$SpinnerMsg, newCmd));
 			case 'AnimationMsg':
 				var aMsg = msg.a;
-				var oldOutcomes = model.animation.sample;
-				var notSpinMsg = function () {
-					if (aMsg.$ === 'Spin') {
-						return false;
-					} else {
-						return true;
-					}
-				}();
 				var _v5 = A2(
 					$author$project$Animation$update,
 					aMsg,
@@ -14075,61 +14252,103 @@ var $author$project$Main$update = F2(
 					}(model));
 				var newModel = _v5.a;
 				var newCmd = _v5.b;
-				var newOutcomes = newModel.sample;
-				var outcomesChanged = !_Utils_eq(newOutcomes, oldOutcomes);
-				var updatedSample = outcomesChanged ? A2($author$project$OneSample$updateSampleFromOutcome, newOutcomes, model.sample) : model.sample;
-				var finalModel = $author$project$Main$updateLocation(
-					_Utils_update(
-						model,
-						{animation: newModel, sample: updatedSample}));
-				var nextCmd = (notSpinMsg && outcomesChanged) ? $author$project$Main$samplePlotCmd(finalModel) : A2($elm$core$Platform$Cmd$map, $author$project$Main$AnimationMsg, newCmd);
-				return _Utils_Tuple2(finalModel, nextCmd);
-			case 'SampleMsg':
-				var sMsg = msg.a;
-				var _v7 = A2(
-					$author$project$OneSample$update,
-					sMsg,
-					function ($) {
-						return $.sample;
-					}(model));
-				var newModel = _v7.a;
-				var _v8 = function () {
-					if (sMsg.$ === 'ChangeN') {
+				var sampleModel = function () {
+					var _v9 = newModel.state;
+					switch (_v9.$) {
+						case 'UpdateSample':
+							var outcomes = newModel.sample;
+							var newSample = A2($author$project$OneSample$updateSampleFromOutcome, outcomes, model.sample);
+							var currentSampleModel = model.sample;
+							return _Utils_update(
+								currentSampleModel,
+								{sample: newSample});
+						case 'UpdateDist':
+							var outcomes = newModel.sample;
+							var newSample = A2($author$project$OneSample$updateSampleFromOutcome, outcomes, model.sample);
+							var currentSampleModel = model.sample;
+							return _Utils_update(
+								currentSampleModel,
+								{sample: newSample});
+						default:
+							return model.sample;
+					}
+				}();
+				var _v6 = function () {
+					var _v7 = newModel.state;
+					if (_v7.$ === 'UpdateDist') {
+						var numSuccess = $elm$core$List$sum(
+							A2(
+								$elm$core$List$map,
+								$author$project$OneSample$outcome(model.sample.p),
+								newModel.sample));
 						return A2(
 							$author$project$CollectStats$update,
-							$author$project$CollectStats$UpdateN(newModel.nData),
+							$author$project$CollectStats$OneNewStatistic(numSuccess),
 							model.collect);
 					} else {
 						return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
 					}
 				}();
-				var collectModel = _v8.a;
-				var _v10 = function () {
-					if (sMsg.$ === 'ChangeN') {
-						return A2(
-							$author$project$Animation$update,
-							$author$project$Animation$UpdateN(newModel.nData),
-							model.animation);
-					} else {
-						return _Utils_Tuple2(model.animation, $elm$core$Platform$Cmd$none);
+				var collectModel = _v6.a;
+				var finalModel = $author$project$Main$updateLocation(
+					_Utils_update(
+						model,
+						{animation: newModel, collect: collectModel, sample: sampleModel}));
+				var finalCmd = function () {
+					var _v8 = newModel.state;
+					switch (_v8.$) {
+						case 'UpdateSample':
+							return $author$project$Main$samplePlotCmd(finalModel);
+						case 'UpdateSampleNoAnimation':
+							return $author$project$Main$samplePlotCmd(finalModel);
+						case 'UpdateDist':
+							return $author$project$Main$distPlotCmd(collectModel);
+						default:
+							return A2($elm$core$Platform$Cmd$map, $author$project$Main$AnimationMsg, newCmd);
 					}
 				}();
-				var animation = _v10.a;
+				return _Utils_Tuple2(finalModel, finalCmd);
+			case 'SampleMsg':
+				var sMsg = msg.a;
+				var _v10 = A2(
+					$author$project$OneSample$update,
+					sMsg,
+					function ($) {
+						return $.sample;
+					}(model));
+				var newModel = _v10.a;
+				var _v11 = function () {
+					if (sMsg.$ === 'UpdateSample') {
+						var ws = sMsg.a;
+						var numSuccess = $elm$core$List$sum(
+							A2(
+								$elm$core$List$map,
+								$author$project$OneSample$outcome(model.sample.p),
+								ws));
+						return A2(
+							$author$project$CollectStats$update,
+							$author$project$CollectStats$OneNewStatistic(numSuccess),
+							model.collect);
+					} else {
+						return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
+					}
+				}();
+				var collectModel = _v11.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animation: animation, collect: collectModel, sample: newModel}),
+						{collect: collectModel, sample: newModel}),
 					$elm$core$Platform$Cmd$none);
 			default:
 				var cMsg = msg.a;
-				var _v12 = A2(
+				var _v13 = A2(
 					$author$project$CollectStats$update,
 					cMsg,
 					function ($) {
 						return $.collect;
 					}(model));
-				var newModel = _v12.a;
-				var newCmd = _v12.b;
+				var newModel = _v13.a;
+				var newCmd = _v13.b;
 				var finalCmd = function () {
 					if (cMsg.$ === 'Collect') {
 						return A2($elm$core$Platform$Cmd$map, $author$project$Main$CollectMsg, newCmd);
@@ -14147,9 +14366,6 @@ var $author$project$Main$update = F2(
 var $author$project$Main$SampleMsg = function (a) {
 	return {$: 'SampleMsg', a: a};
 };
-var $author$project$Main$SingleObservationMsg = function (a) {
-	return {$: 'SingleObservationMsg', a: a};
-};
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
@@ -14160,6 +14376,7 @@ var $author$project$DataEntry$makeHtmlText = F2(
 		return $elm$html$Html$text(
 			_Utils_ap(header, str));
 	});
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Main$debugView = function (model) {
 	return model.debug ? A2(
 		$elm$html$Html$div,
@@ -14227,6 +14444,15 @@ var $author$project$Main$getSpinnerModel = function (model) {
 			var s = _v0.a;
 			return A2($author$project$Spinner$updateWithLocation, s.location, baseSpinner);
 		case 'Spinning':
+			var s = _v0.a;
+			return A2($author$project$Spinner$updateWithLocation, s.location, baseSpinner);
+		case 'Paused':
+			var s = _v0.a;
+			return A2($author$project$Spinner$updateWithLocation, s.location, baseSpinner);
+		case 'UpdateSample':
+			var s = _v0.a;
+			return A2($author$project$Spinner$updateWithLocation, s.location, baseSpinner);
+		case 'UpdateSampleNoAnimation':
 			var s = _v0.a;
 			return A2($author$project$Spinner$updateWithLocation, s.location, baseSpinner);
 		default:
@@ -15242,7 +15468,7 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2 = A2($rundis$elm_bootstrap$Boot
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
 var $author$project$Layout$collectButtonGrid = F3(
-	function (pulldown, buttons, count) {
+	function (reset, buttons, count) {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
@@ -15277,7 +15503,7 @@ var $author$project$Layout$collectButtonGrid = F3(
 									_List_fromArray(
 										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs6]),
 									_List_fromArray(
-										[pulldown]))
+										[reset]))
 								])),
 							A2(
 							$rundis$elm_bootstrap$Bootstrap$Grid$row,
@@ -15666,495 +15892,23 @@ var $author$project$CollectStats$collectButtons = function (ns) {
 				A2($elm$core$List$map, $author$project$CollectStats$collectButton, ns))
 			]));
 };
-var $author$project$CollectStats$UseCount = {$: 'UseCount'};
-var $author$project$CollectStats$UseProp = {$: 'UseProp'};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem = function (a) {
-	return {$: 'DropdownItem', a: a};
-};
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem = F2(
-	function (attributes, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem(
-			A2(
-				$elm$html$Html$button,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$type_('button'),
-							$elm$html$Html$Attributes$class('dropdown-item')
-						]),
-					attributes),
-				children));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir = function (maybeDir) {
-	var toAttrs = function (dir) {
-		return _List_fromArray(
-			[
-				$elm$html$Html$Attributes$class(
-				'drop' + function () {
-					if (dir.$ === 'Dropleft') {
-						return 'left';
-					} else {
-						return 'right';
-					}
-				}())
-			]);
-	};
-	return A2(
-		$elm$core$Maybe$withDefault,
-		_List_Nil,
-		A2($elm$core$Maybe$map, toAttrs, maybeDir));
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
-	function (status, config) {
-		return _Utils_ap(
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('btn-group', true),
-							_Utils_Tuple2(
-							'show',
-							!_Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed)),
-							_Utils_Tuple2('dropup', config.isDropUp)
-						]))
-				]),
-			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.dropDirection),
-				config.attributes));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
-	function (_v0, config) {
-		var status = _v0.a.status;
-		var toggleSize = _v0.a.toggleSize;
-		var menuSize = _v0.a.menuSize;
-		var px = function (n) {
-			return $elm$core$String$fromFloat(n) + 'px';
-		};
-		var translate = F3(
-			function (x, y, z) {
-				return 'translate3d(' + (px(x) + (',' + (px(y) + (',' + (px(z) + ')')))));
-			});
-		var _default = _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'top', '0'),
-				A2($elm$html$Html$Attributes$style, 'left', '0')
-			]);
-		var _v1 = _Utils_Tuple2(config.isDropUp, config.dropDirection);
-		_v1$0:
-		while (true) {
-			if (_v1.b.$ === 'Just') {
-				if (_v1.b.a.$ === 'Dropright') {
-					if (_v1.a) {
-						break _v1$0;
-					} else {
-						var _v2 = _v1.b.a;
-						return _default;
-					}
-				} else {
-					if (_v1.a) {
-						break _v1$0;
-					} else {
-						var _v3 = _v1.b.a;
-						return _Utils_ap(
-							_default,
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$Attributes$style,
-									'transform',
-									A3(translate, (-toggleSize.width) - menuSize.width, 0, 0))
-								]));
-					}
-				}
-			} else {
-				if (_v1.a) {
-					break _v1$0;
-				} else {
-					return _Utils_ap(
-						_default,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$Attributes$style,
-								'transform',
-								A3(translate, -toggleSize.width, toggleSize.height, 0))
-							]));
-				}
-			}
-		}
-		return _Utils_ap(
-			_default,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$Attributes$style,
-					'transform',
-					A3(translate, -toggleSize.width, -menuSize.height, 0))
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu = F3(
-	function (state, config, items) {
-		var status = state.a.status;
-		var menuSize = state.a.menuSize;
-		var wrapperStyles = _Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed) ? _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'height', '0'),
-				A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
-				A2($elm$html$Html$Attributes$style, 'position', 'relative')
-			]) : _List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'position', 'relative')
-			]);
-		return A2(
-			$elm$html$Html$div,
-			wrapperStyles,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('dropdown-menu', true),
-										_Utils_Tuple2('dropdown-menu-right', config.hasMenuRight),
-										_Utils_Tuple2(
-										'show',
-										!_Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed))
-									]))
-							]),
-						_Utils_ap(
-							A2($rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles, state, config),
-							config.menuAttrs)),
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var x = _v0.a;
-							return x;
-						},
-						items))
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
-	function (option, options) {
-		switch (option.$) {
-			case 'AlignMenuRight':
-				return _Utils_update(
-					options,
-					{hasMenuRight: true});
-			case 'Dropup':
-				return _Utils_update(
-					options,
-					{isDropUp: true});
-			case 'Attrs':
-				var attrs_ = option.a;
-				return _Utils_update(
-					options,
-					{attributes: attrs_});
-			case 'DropToDir':
-				var dir = option.a;
-				return _Utils_update(
-					options,
-					{
-						dropDirection: $elm$core$Maybe$Just(dir)
-					});
-			default:
-				var attrs_ = option.a;
-				return _Utils_update(
-					options,
-					{menuAttrs: attrs_});
-		}
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions = {attributes: _List_Nil, dropDirection: $elm$core$Maybe$Nothing, hasMenuRight: false, isDropUp: false, menuAttrs: _List_Nil};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig = function (options) {
-	return A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier, $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions, options);
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
-	function (state, _v0) {
-		var status = state.a.status;
-		var toggleMsg = _v0.toggleMsg;
-		var toggleButton = _v0.toggleButton;
-		var items = _v0.items;
-		var options = _v0.options;
-		var config = $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig(options);
-		var _v1 = toggleButton;
-		var buttonFn = _v1.a;
-		return A2(
-			$elm$html$Html$div,
-			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes, status, config),
-			_List_fromArray(
-				[
-					A2(buttonFn, toggleMsg, state),
-					A3($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu, state, config, items)
-				]));
-	});
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
+var $author$project$CollectStats$Reset = {$: 'Reset'};
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size = function (a) {
 	return {$: 'Size', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
-var $author$project$CollectStats$statPulldownText = function (state) {
-	switch (state.$) {
-		case 'NotSelected':
-			return 'Select Statistic';
-		case 'Count':
-			return 'Count';
-		default:
-			return 'Proportion';
-	}
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle = function (a) {
-	return {$: 'DropdownToggle', a: a};
-};
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$Open = {$: 'Open'};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
-	switch (status.$) {
-		case 'Open':
-			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed;
-		case 'ListenClicks':
-			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed;
-		default:
-			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Open;
-	}
-};
-var $elm$json$Json$Decode$map3 = _Json_map3;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft = A2($elm$json$Json$Decode$field, 'offsetLeft', $elm$json$Json$Decode$float);
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent = F2(
-	function (x, decoder) {
-		return $elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					$elm$json$Json$Decode$field,
-					'offsetParent',
-					$elm$json$Json$Decode$null(x)),
-					A2($elm$json$Json$Decode$field, 'offsetParent', decoder)
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop = A2($elm$json$Json$Decode$field, 'offsetTop', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft = A2($elm$json$Json$Decode$field, 'scrollLeft', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop = A2($elm$json$Json$Decode$field, 'scrollTop', $elm$json$Json$Decode$float);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position = F2(
-	function (x, y) {
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (_v0) {
-				var x_ = _v0.a;
-				var y_ = _v0.b;
-				return A2(
-					$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent,
-					_Utils_Tuple2(x_, y_),
-					A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, x_, y_));
-			},
-			A5(
-				$elm$json$Json$Decode$map4,
-				F4(
-					function (scrollLeft_, scrollTop_, offsetLeft_, offsetTop_) {
-						return _Utils_Tuple2((x + offsetLeft_) - scrollLeft_, (y + offsetTop_) - scrollTop_);
-					}),
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft,
-				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
-	$elm$json$Json$Decode$map3,
-	F3(
-		function (_v0, width, height) {
-			var x = _v0.a;
-			var y = _v0.b;
-			return {height: height, left: x, top: y, width: width};
-		}),
-	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight);
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
-	return $elm$json$Json$Decode$at(
-		_List_fromArray(
-			[
-				'childNodes',
-				$elm$core$String$fromInt(idx)
-			]));
-};
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling = function (decoder) {
-	return A2($elm$json$Json$Decode$field, 'nextSibling', decoder);
-};
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className = A2(
-	$elm$json$Json$Decode$at,
+var $author$project$CollectStats$resetButton = A2(
+	$rundis$elm_bootstrap$Bootstrap$Button$button,
 	_List_fromArray(
-		['className']),
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle = A2(
-	$elm$json$Json$Decode$andThen,
-	function (_class) {
-		return A2($elm$core$String$contains, 'dropdown-toggle', _class) ? $elm$json$Json$Decode$succeed(true) : $elm$json$Json$Decode$succeed(false);
-	},
-	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className);
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggler = F2(
-	function (path, decoder) {
-		return $elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					$elm$json$Json$Decode$andThen,
-					function (res) {
-						return res ? A2($elm$json$Json$Decode$at, path, decoder) : $elm$json$Json$Decode$fail('');
-					},
-					A2($elm$json$Json$Decode$at, path, $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle)),
-					A2(
-					$elm$json$Json$Decode$andThen,
-					function (_v0) {
-						return A2(
-							$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-							_Utils_ap(
-								path,
-								_List_fromArray(
-									['parentElement'])),
-							decoder);
-					},
-					A2(
-						$elm$json$Json$Decode$at,
-						_Utils_ap(
-							path,
-							_List_fromArray(
-								['parentElement'])),
-						$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className)),
-					$elm$json$Json$Decode$fail('No toggler found')
-				]));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder = A3(
-	$elm$json$Json$Decode$map2,
-	$elm$core$Tuple$pair,
-	A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-		_List_fromArray(
-			['target']),
-		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea),
-	A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
-		_List_fromArray(
-			['target']),
-		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling(
-			A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode, 0, $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea))));
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler = F2(
-	function (toMsg, state) {
-		var status = state.a.status;
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			function (_v0) {
-				var b = _v0.a;
-				var m = _v0.b;
-				return $elm$json$Json$Decode$succeed(
-					toMsg(
-						$rundis$elm_bootstrap$Bootstrap$Dropdown$State(
-							{
-								menuSize: m,
-								status: $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus(status),
-								toggleSize: b
-							})));
-			},
-			$rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate = F4(
-	function (buttonOptions, children, toggleMsg, state) {
-		return A2(
-			$elm$html$Html$button,
-			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Internal$Button$buttonAttributes(buttonOptions),
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('dropdown-toggle'),
-						$elm$html$Html$Attributes$type_('button'),
-						A2(
-						$elm$html$Html$Events$on,
-						'click',
-						A2($rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler, toggleMsg, state))
-					])),
-			children);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggle = F2(
-	function (buttonOptions, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle(
-			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate, buttonOptions, children));
-	});
-var $author$project$CollectStats$pulldownView = function (model) {
-	return A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
-		model.pulldown,
-		{
-			items: _List_fromArray(
-				[
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick($author$project$CollectStats$UseCount)
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Count')
-						])),
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick($author$project$CollectStats$UseProp)
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Proportion')
-						]))
-				]),
-			options: _List_Nil,
-			toggleButton: A2(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
-				_List_fromArray(
-					[$rundis$elm_bootstrap$Bootstrap$Button$primary, $rundis$elm_bootstrap$Bootstrap$Button$small]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$author$project$CollectStats$statPulldownText(model.statistic))
-					])),
-			toggleMsg: $author$project$CollectStats$ChangePulldown
-		});
-};
+		[
+			$rundis$elm_bootstrap$Bootstrap$Button$primary,
+			$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$CollectStats$Reset),
+			$rundis$elm_bootstrap$Bootstrap$Button$small
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('Reset')
+		]));
 var $elm$core$String$right = F2(
 	function (n, string) {
 		return (n < 1) ? '' : A3(
@@ -16203,12 +15957,12 @@ var $author$project$CollectStats$totalCollectedTxt = function (model) {
 var $author$project$CollectStats$collectButtonView = function (model) {
 	return A3(
 		$author$project$Layout$collectButtonGrid,
-		$author$project$CollectStats$pulldownView(model),
+		$author$project$CollectStats$resetButton,
 		_Utils_eq(model.buttonVisibility, $author$project$DataEntry$Shown) ? $author$project$CollectStats$collectButtons($author$project$CollectStats$defaults.collectNs) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 		$author$project$CollectStats$totalCollectedTxt(model));
 };
 var $author$project$Main$maybeCollectView = function (model) {
-	var show = _Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.sample.nData.state, $author$project$DataEntry$Correct) && _Utils_eq(model.spinner.visibility, $author$project$DataEntry$Shown));
+	var show = _Utils_eq(model.spinner.visibility, $author$project$DataEntry$Shown);
 	return show ? $author$project$CollectStats$collectButtonView(model.collect) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
 };
 var $author$project$CollectStats$ChangeX = function (a) {
@@ -16343,6 +16097,7 @@ var $elm$html$Html$Attributes$autocomplete = function (bool) {
 var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $rundis$elm_bootstrap$Bootstrap$Button$radioButton = F3(
 	function (checked, options, children) {
 		var hideRadio = A2($elm$html$Html$Attributes$attribute, 'data-toggle', 'button');
@@ -16632,6 +16387,12 @@ var $elm$html$Html$Events$stopPropagationOn = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
 	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -16824,36 +16585,31 @@ var $author$project$DataEntry$entryView = F4(
 	});
 var $author$project$CollectStats$xEntry = A2($author$project$DataEntry$entryView, '', 'x');
 var $author$project$CollectStats$pvalueView = function (model) {
-	var _v0 = $author$project$CollectStats$notEnoughTrials(model);
-	if (_v0) {
-		return A3(
-			$author$project$Layout$pValueGrid,
-			A2($elm$html$Html$div, _List_Nil, _List_Nil),
-			A2($elm$html$Html$div, _List_Nil, _List_Nil),
-			A3($author$project$DataEntry$errorView, $author$project$CollectStats$notEnoughTrials, 'Need at least 1000 collected statistics', model));
-	} else {
-		return A3(
-			$author$project$Layout$pValueGrid,
-			$author$project$CollectStats$pvalueButtons(model),
-			A2($author$project$CollectStats$xEntry, $author$project$CollectStats$ChangeX, model.xData.state),
-			$author$project$CollectStats$outputView(model));
-	}
+	var output = function () {
+		var _v0 = $author$project$CollectStats$notEnoughTrials(model);
+		if (_v0) {
+			return A3(
+				$author$project$DataEntry$errorView,
+				$author$project$CollectStats$notEnoughTrials,
+				'Need at least ' + ($elm$core$String$fromInt($author$project$CollectStats$defaults.minTrialsForPValue) + ' collected statistics'),
+				model);
+		} else {
+			return $author$project$CollectStats$outputView(model);
+		}
+	}();
+	return A3(
+		$author$project$Layout$pValueGrid,
+		$author$project$CollectStats$pvalueButtons(model),
+		A2($author$project$CollectStats$xEntry, $author$project$CollectStats$ChangeX, model.xData.state),
+		output);
 };
 var $author$project$Main$maybePValueView = function (model) {
-	var show = _Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.sample.nData.state, $author$project$DataEntry$Correct) && _Utils_eq(model.spinner.visibility, $author$project$DataEntry$Shown));
+	var show = _Utils_eq(model.spinner.visibility, $author$project$DataEntry$Shown);
 	return show ? $author$project$CollectStats$pvalueView(model.collect) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
 };
-var $author$project$OneSample$ChangeN = function (a) {
-	return {$: 'ChangeN', a: a};
-};
-var $author$project$OneSample$nEntry = A2($author$project$DataEntry$entryView, '20', 'n');
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col9 = {$: 'Col9'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs9 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col9);
-var $author$project$Layout$sampleGrid = function (nInput) {
+var $author$project$Layout$sampleGrid = function (statistic) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -16869,7 +16625,7 @@ var $author$project$Layout$sampleGrid = function (nInput) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('A Sample of Observations')
+								$elm$html$Html$text('Sample')
 							])),
 						A2(
 						$rundis$elm_bootstrap$Bootstrap$Grid$row,
@@ -16879,13 +16635,13 @@ var $author$project$Layout$sampleGrid = function (nInput) {
 								A2(
 								$rundis$elm_bootstrap$Bootstrap$Grid$col,
 								_List_fromArray(
-									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5]),
+									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs10]),
 								_List_fromArray(
-									[nInput])),
+									[statistic])),
 								A2(
 								$rundis$elm_bootstrap$Bootstrap$Grid$col,
 								_List_fromArray(
-									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs9]),
+									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2]),
 								_List_Nil)
 							])),
 						A2(
@@ -16911,20 +16667,46 @@ var $author$project$Layout$sampleGrid = function (nInput) {
 					]))
 			]));
 };
-var $author$project$OneSample$sampleView = function (model) {
-	return $author$project$Layout$sampleGrid(
-		A2($author$project$OneSample$nEntry, $author$project$OneSample$ChangeN, model.nData.state));
+var $author$project$OneSample$numSuccessesView = function (model) {
+	return A2(
+		$author$project$DataEntry$makeHtmlText,
+		'Count(Success) = ',
+		$elm$core$String$fromInt(model.sample.numSuccess));
+};
+var $author$project$OneSample$propSuccessesView = function (model) {
+	return function (n) {
+		return A2(
+			$author$project$DataEntry$makeHtmlText,
+			'Proportion(Success) = ',
+			$elm$core$String$fromFloat(
+				A2($author$project$Binomial$roundFloat, 3, n / model.n)));
+	}(model.sample.numSuccess);
+};
+var $author$project$OneSample$statisticView = function (model) {
+	var _v0 = model.statistic;
+	switch (_v0.$) {
+		case 'Count':
+			return $author$project$OneSample$numSuccessesView(model);
+		case 'Proportion':
+			return $author$project$OneSample$propSuccessesView(model);
+		default:
+			return A2($author$project$DataEntry$makeHtmlText, '', '');
+	}
 };
 var $author$project$OneSample$maybeSampleView = F2(
 	function (visibility, model) {
 		if (visibility.$ === 'Shown') {
-			return $author$project$OneSample$sampleView(model);
+			return $author$project$Layout$sampleGrid(
+				$author$project$OneSample$statisticView(model));
 		} else {
 			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
 		}
 	});
 var $author$project$SingleObservation$ChangeFailureLbl = function (a) {
 	return {$: 'ChangeFailureLbl', a: a};
+};
+var $author$project$SingleObservation$ChangeN = function (a) {
+	return {$: 'ChangeN', a: a};
 };
 var $author$project$SingleObservation$ChangeP = function (a) {
 	return {$: 'ChangeP', a: a};
@@ -16937,7 +16719,8 @@ var $author$project$SingleObservation$hasLabelError = function (model) {
 	return _Utils_eq(model.successLbl.state, $author$project$DataEntry$OtherwiseIncorrect) || _Utils_eq(model.failureLbl.state, $author$project$DataEntry$OtherwiseIncorrect);
 };
 var $author$project$SingleObservation$labelError = A2($author$project$DataEntry$errorView, $author$project$SingleObservation$hasLabelError, 'The labels cannot be the same.');
-var $author$project$SingleObservation$pEntry = A2($author$project$DataEntry$entryView, '0.33', 'p');
+var $author$project$SingleObservation$nEntry = A2($author$project$DataEntry$entryView, '', 'n');
+var $author$project$SingleObservation$pEntry = A2($author$project$DataEntry$entryView, '', 'p');
 var $author$project$SingleObservation$hasPError = function (model) {
 	return _Utils_eq(model.pData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.pData.state, $author$project$DataEntry$OutOfBounds);
 };
@@ -16947,10 +16730,12 @@ var $rundis$elm_bootstrap$Bootstrap$Form$form = F2(
 	function (attributes, children) {
 		return A2($elm$html$Html$form, attributes, children);
 	});
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col7 = {$: 'Col7'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs7 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col7);
-var $author$project$SingleObservation$singleObservationLayout = F5(
-	function (success, failure, p, labelErr, pErr) {
+var $author$project$SingleObservation$singleObservationLayout = F7(
+	function (success, failure, p, n, stat, labelErr, pErr) {
 		return A2(
 			$rundis$elm_bootstrap$Bootstrap$Form$form,
 			_List_Nil,
@@ -17001,7 +16786,25 @@ var $author$project$SingleObservation$singleObservationLayout = F5(
 									A2(
 									$rundis$elm_bootstrap$Bootstrap$Grid$col,
 									_List_fromArray(
-										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2]),
+										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5]),
+									_List_fromArray(
+										[n]))
+								])),
+							A2(
+							$rundis$elm_bootstrap$Bootstrap$Grid$row,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Grid$col,
+									_List_fromArray(
+										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs7]),
+									_List_fromArray(
+										[stat])),
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Grid$col,
+									_List_fromArray(
+										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5]),
 									_List_Nil)
 								]))
 						])),
@@ -17009,18 +16812,569 @@ var $author$project$SingleObservation$singleObservationLayout = F5(
 					pErr
 				]));
 	});
+var $author$project$SingleObservation$UseCount = {$: 'UseCount'};
+var $author$project$SingleObservation$UseProp = {$: 'UseProp'};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem = function (a) {
+	return {$: 'DropdownItem', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem = F2(
+	function (attributes, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem(
+			A2(
+				$elm$html$Html$button,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Attributes$class('dropdown-item')
+						]),
+					attributes),
+				children));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Disabled = function (a) {
+	return {$: 'Disabled', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$disabled = function (disabled_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Disabled(disabled_);
+};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir = function (maybeDir) {
+	var toAttrs = function (dir) {
+		return _List_fromArray(
+			[
+				$elm$html$Html$Attributes$class(
+				'drop' + function () {
+					if (dir.$ === 'Dropleft') {
+						return 'left';
+					} else {
+						return 'right';
+					}
+				}())
+			]);
+	};
+	return A2(
+		$elm$core$Maybe$withDefault,
+		_List_Nil,
+		A2($elm$core$Maybe$map, toAttrs, maybeDir));
+};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
+	function (status, config) {
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('btn-group', true),
+							_Utils_Tuple2(
+							'show',
+							!_Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed)),
+							_Utils_Tuple2('dropup', config.isDropUp)
+						]))
+				]),
+			_Utils_ap(
+				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.dropDirection),
+				config.attributes));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
+	function (_v0, config) {
+		var status = _v0.a.status;
+		var toggleSize = _v0.a.toggleSize;
+		var menuSize = _v0.a.menuSize;
+		var px = function (n) {
+			return $elm$core$String$fromFloat(n) + 'px';
+		};
+		var translate = F3(
+			function (x, y, z) {
+				return 'translate3d(' + (px(x) + (',' + (px(y) + (',' + (px(z) + ')')))));
+			});
+		var _default = _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'top', '0'),
+				A2($elm$html$Html$Attributes$style, 'left', '0')
+			]);
+		var _v1 = _Utils_Tuple2(config.isDropUp, config.dropDirection);
+		_v1$0:
+		while (true) {
+			if (_v1.b.$ === 'Just') {
+				if (_v1.b.a.$ === 'Dropright') {
+					if (_v1.a) {
+						break _v1$0;
+					} else {
+						var _v2 = _v1.b.a;
+						return _default;
+					}
+				} else {
+					if (_v1.a) {
+						break _v1$0;
+					} else {
+						var _v3 = _v1.b.a;
+						return _Utils_ap(
+							_default,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$Attributes$style,
+									'transform',
+									A3(translate, (-toggleSize.width) - menuSize.width, 0, 0))
+								]));
+					}
+				}
+			} else {
+				if (_v1.a) {
+					break _v1$0;
+				} else {
+					return _Utils_ap(
+						_default,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$style,
+								'transform',
+								A3(translate, -toggleSize.width, toggleSize.height, 0))
+							]));
+				}
+			}
+		}
+		return _Utils_ap(
+			_default,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$Attributes$style,
+					'transform',
+					A3(translate, -toggleSize.width, -menuSize.height, 0))
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu = F3(
+	function (state, config, items) {
+		var status = state.a.status;
+		var menuSize = state.a.menuSize;
+		var wrapperStyles = _Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed) ? _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'height', '0'),
+				A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
+				A2($elm$html$Html$Attributes$style, 'position', 'relative')
+			]) : _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'relative')
+			]);
+		return A2(
+			$elm$html$Html$div,
+			wrapperStyles,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('dropdown-menu', true),
+										_Utils_Tuple2('dropdown-menu-right', config.hasMenuRight),
+										_Utils_Tuple2(
+										'show',
+										!_Utils_eq(status, $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed))
+									]))
+							]),
+						_Utils_ap(
+							A2($rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles, state, config),
+							config.menuAttrs)),
+					A2(
+						$elm$core$List$map,
+						function (_v0) {
+							var x = _v0.a;
+							return x;
+						},
+						items))
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier = F2(
+	function (option, options) {
+		switch (option.$) {
+			case 'AlignMenuRight':
+				return _Utils_update(
+					options,
+					{hasMenuRight: true});
+			case 'Dropup':
+				return _Utils_update(
+					options,
+					{isDropUp: true});
+			case 'Attrs':
+				var attrs_ = option.a;
+				return _Utils_update(
+					options,
+					{attributes: attrs_});
+			case 'DropToDir':
+				var dir = option.a;
+				return _Utils_update(
+					options,
+					{
+						dropDirection: $elm$core$Maybe$Just(dir)
+					});
+			default:
+				var attrs_ = option.a;
+				return _Utils_update(
+					options,
+					{menuAttrs: attrs_});
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions = {attributes: _List_Nil, dropDirection: $elm$core$Maybe$Nothing, hasMenuRight: false, isDropUp: false, menuAttrs: _List_Nil};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig = function (options) {
+	return A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Dropdown$applyModifier, $rundis$elm_bootstrap$Bootstrap$Dropdown$defaultOptions, options);
+};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
+	function (state, _v0) {
+		var status = state.a.status;
+		var toggleMsg = _v0.toggleMsg;
+		var toggleButton = _v0.toggleButton;
+		var items = _v0.items;
+		var options = _v0.options;
+		var config = $rundis$elm_bootstrap$Bootstrap$Dropdown$toConfig(options);
+		var _v1 = toggleButton;
+		var buttonFn = _v1.a;
+		return A2(
+			$elm$html$Html$div,
+			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes, status, config),
+			_List_fromArray(
+				[
+					A2(buttonFn, toggleMsg, state),
+					A3($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu, state, config, items)
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$dropdown = F2(
+	function (state, conf) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Addon(
+			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown, state, conf));
+	});
+var $author$project$SingleObservation$inputFeedback = function (model) {
+	var _v0 = model.statistic;
+	if (_v0.$ === 'NotSelected') {
+		return _List_Nil;
+	} else {
+		return _List_fromArray(
+			[$rundis$elm_bootstrap$Bootstrap$Form$Input$success]);
+	}
+};
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined = function (a) {
+	return {$: 'Outlined', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary = {$: 'Secondary'};
+var $rundis$elm_bootstrap$Bootstrap$Button$outlineSecondary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary));
+var $author$project$SingleObservation$pulldownOutline = function (model) {
+	var _v0 = model.statistic;
+	if (_v0.$ === 'NotSelected') {
+		return $rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary;
+	} else {
+		return $rundis$elm_bootstrap$Bootstrap$Button$outlineSecondary;
+	}
+};
+var $author$project$SingleObservation$statPulldownText = function (model) {
+	var _v0 = model.statistic;
+	switch (_v0.$) {
+		case 'NotSelected':
+			return 'Select';
+		case 'Count':
+			return 'Count';
+		default:
+			return 'Proportion';
+	}
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$successors = F2(
+	function (addons, _v0) {
+		var conf = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config(
+			_Utils_update(
+				conf,
+				{successors: addons}));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle = function (a) {
+	return {$: 'DropdownToggle', a: a};
+};
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$Open = {$: 'Open'};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
+	switch (status.$) {
+		case 'Open':
+			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed;
+		case 'ListenClicks':
+			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed;
+		default:
+			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Open;
+	}
+};
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft = A2($elm$json$Json$Decode$field, 'offsetLeft', $elm$json$Json$Decode$float);
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent = F2(
+	function (x, decoder) {
+		return $elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					$elm$json$Json$Decode$field,
+					'offsetParent',
+					$elm$json$Json$Decode$null(x)),
+					A2($elm$json$Json$Decode$field, 'offsetParent', decoder)
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop = A2($elm$json$Json$Decode$field, 'offsetTop', $elm$json$Json$Decode$float);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft = A2($elm$json$Json$Decode$field, 'scrollLeft', $elm$json$Json$Decode$float);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop = A2($elm$json$Json$Decode$field, 'scrollTop', $elm$json$Json$Decode$float);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position = F2(
+	function (x, y) {
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			function (_v0) {
+				var x_ = _v0.a;
+				var y_ = _v0.b;
+				return A2(
+					$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetParent,
+					_Utils_Tuple2(x_, y_),
+					A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, x_, y_));
+			},
+			A5(
+				$elm$json$Json$Decode$map4,
+				F4(
+					function (scrollLeft_, scrollTop_, offsetLeft_, offsetTop_) {
+						return _Utils_Tuple2((x + offsetLeft_) - scrollLeft_, (y + offsetTop_) - scrollTop_);
+					}),
+				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollLeft,
+				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$scrollTop,
+				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft,
+				$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetTop));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
+	$elm$json$Json$Decode$map3,
+	F3(
+		function (_v0, width, height) {
+			var x = _v0.a;
+			var y = _v0.b;
+			return {height: height, left: x, top: y, width: width};
+		}),
+	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
+	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
+	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
+	return $elm$json$Json$Decode$at(
+		_List_fromArray(
+			[
+				'childNodes',
+				$elm$core$String$fromInt(idx)
+			]));
+};
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling = function (decoder) {
+	return A2($elm$json$Json$Decode$field, 'nextSibling', decoder);
+};
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['className']),
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle = A2(
+	$elm$json$Json$Decode$andThen,
+	function (_class) {
+		return A2($elm$core$String$contains, 'dropdown-toggle', _class) ? $elm$json$Json$Decode$succeed(true) : $elm$json$Json$Decode$succeed(false);
+	},
+	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className);
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggler = F2(
+	function (path, decoder) {
+		return $elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					$elm$json$Json$Decode$andThen,
+					function (res) {
+						return res ? A2($elm$json$Json$Decode$at, path, decoder) : $elm$json$Json$Decode$fail('');
+					},
+					A2($elm$json$Json$Decode$at, path, $rundis$elm_bootstrap$Bootstrap$Dropdown$isToggle)),
+					A2(
+					$elm$json$Json$Decode$andThen,
+					function (_v0) {
+						return A2(
+							$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
+							_Utils_ap(
+								path,
+								_List_fromArray(
+									['parentElement'])),
+							decoder);
+					},
+					A2(
+						$elm$json$Json$Decode$at,
+						_Utils_ap(
+							path,
+							_List_fromArray(
+								['parentElement'])),
+						$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className)),
+					$elm$json$Json$Decode$fail('No toggler found')
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder = A3(
+	$elm$json$Json$Decode$map2,
+	$elm$core$Tuple$pair,
+	A2(
+		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
+		_List_fromArray(
+			['target']),
+		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea),
+	A2(
+		$rundis$elm_bootstrap$Bootstrap$Dropdown$toggler,
+		_List_fromArray(
+			['target']),
+		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling(
+			A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode, 0, $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea))));
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler = F2(
+	function (toMsg, state) {
+		var status = state.a.status;
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			function (_v0) {
+				var b = _v0.a;
+				var m = _v0.b;
+				return $elm$json$Json$Decode$succeed(
+					toMsg(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$State(
+							{
+								menuSize: m,
+								status: $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus(status),
+								toggleSize: b
+							})));
+			},
+			$rundis$elm_bootstrap$Bootstrap$Dropdown$sizeDecoder);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate = F4(
+	function (buttonOptions, children, toggleMsg, state) {
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				$rundis$elm_bootstrap$Bootstrap$Internal$Button$buttonAttributes(buttonOptions),
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('dropdown-toggle'),
+						$elm$html$Html$Attributes$type_('button'),
+						A2(
+						$elm$html$Html$Events$on,
+						'click',
+						A2($rundis$elm_bootstrap$Bootstrap$Dropdown$clickHandler, toggleMsg, state))
+					])),
+			children);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggle = F2(
+	function (buttonOptions, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle(
+			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate, buttonOptions, children));
+	});
+var $author$project$SingleObservation$statPulldown = function (model) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$view(
+		A2(
+			$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$successors,
+			_List_fromArray(
+				[
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$dropdown,
+					model.pulldown,
+					{
+						items: _List_fromArray(
+							[
+								A2(
+								$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$SingleObservation$UseCount)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Count')
+									])),
+								A2(
+								$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+								_List_fromArray(
+									[
+										$elm$html$Html$Events$onClick($author$project$SingleObservation$UseProp)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Proportion')
+									]))
+							]),
+						options: _List_Nil,
+						toggleButton: A2(
+							$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
+							_List_fromArray(
+								[
+									$author$project$SingleObservation$pulldownOutline(model),
+									$rundis$elm_bootstrap$Bootstrap$Button$small
+								]),
+							_List_Nil),
+						toggleMsg: $author$project$SingleObservation$ChangePulldown
+					})
+				]),
+			A2(
+				$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$predecessors,
+				_List_fromArray(
+					[
+						A2(
+						$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Statistic')
+							]))
+					]),
+				$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$small(
+					$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$config(
+						$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$text(
+							_Utils_ap(
+								_List_fromArray(
+									[
+										$rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder(
+										$author$project$SingleObservation$statPulldownText(model)),
+										$rundis$elm_bootstrap$Bootstrap$Form$Input$disabled(true)
+									]),
+								$author$project$SingleObservation$inputFeedback(model))))))));
+};
 var $author$project$SingleObservation$successEntry = A2($author$project$DataEntry$entryView, 'Label', 'Success');
 var $author$project$SingleObservation$singleObservationView = function (model) {
-	return A5(
+	return A7(
 		$author$project$SingleObservation$singleObservationLayout,
 		A2($author$project$SingleObservation$successEntry, $author$project$SingleObservation$ChangeSuccessLbl, model.successLbl.state),
 		A2($author$project$SingleObservation$failureEntry, $author$project$SingleObservation$ChangeFailureLbl, model.failureLbl.state),
 		A2($author$project$SingleObservation$pEntry, $author$project$SingleObservation$ChangeP, model.pData.state),
+		A2($author$project$SingleObservation$nEntry, $author$project$SingleObservation$ChangeN, model.nData.state),
+		$author$project$SingleObservation$statPulldown(model),
 		$author$project$SingleObservation$labelError(model),
 		$author$project$SingleObservation$pError(model));
 };
-var $author$project$Animation$SetSpinNTimes = {$: 'SetSpinNTimes'};
-var $author$project$Animation$SetSpinOnce = {$: 'SetSpinOnce'};
 var $author$project$Animation$Spin = {$: 'Spin'};
 var $author$project$Animation$ToggleAnimation = function (a) {
 	return {$: 'ToggleAnimation', a: a};
@@ -17031,6 +17385,8 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Attrs = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$attrs = function (attrs_) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Attrs(attrs_);
 };
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Block = {$: 'Block'};
+var $rundis$elm_bootstrap$Bootstrap$Button$block = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Block;
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$On = {$: 'On'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Value = function (a) {
@@ -17240,40 +17596,12 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$custom = F2(
 							$elm$html$Html$text(labelText)
 						]))));
 	});
-var $author$project$Animation$disableNoAnimation = function (model) {
-	return model.animationOff ? _List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('disabled'),
-			$elm$html$Html$Attributes$disabled(true)
-		]) : _List_Nil;
-};
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary = {$: 'Secondary'};
-var $rundis$elm_bootstrap$Bootstrap$Button$secondary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary));
-var $author$project$Animation$dropdownStyle = function (model) {
-	return model.animationOff ? $rundis$elm_bootstrap$Bootstrap$Button$secondary : $rundis$elm_bootstrap$Bootstrap$Button$primary;
-};
-var $author$project$Animation$nTimeText = function (model) {
-	return function (s) {
-		return s + ' Times';
-	}(
-		$elm$core$String$fromInt(model.n));
-};
-var $author$project$Animation$dropdownText = function (model) {
-	var _v0 = model.spinMode;
-	if (_v0.$ === 'SpinOnce') {
-		return 'Once';
-	} else {
-		return $author$project$Animation$nTimeText(model);
-	}
-};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id = function (a) {
 	return {$: 'Id', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id = function (theId) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id(theId);
 };
-var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml2 = $elm$html$Html$Attributes$class('ml-2');
 var $author$project$Animation$nToLargeWarning = A2(
 	$author$project$DataEntry$errorView,
 	function (model) {
@@ -17285,6 +17613,12 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
+};
+var $author$project$Animation$spinButtonText = function (model) {
+	return function (s) {
+		return 'Spin ' + (s + ' Times');
+	}(
+		$elm$core$String$fromInt(model.n));
 };
 var $author$project$Animation$spinButtonGrid = function (model) {
 	return A2(
@@ -17305,7 +17639,7 @@ var $author$project$Animation$spinButtonGrid = function (model) {
 								A2(
 								$rundis$elm_bootstrap$Bootstrap$Grid$col,
 								_List_fromArray(
-									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2]),
+									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs6]),
 								_List_fromArray(
 									[
 										A2(
@@ -17314,74 +17648,13 @@ var $author$project$Animation$spinButtonGrid = function (model) {
 											[
 												$rundis$elm_bootstrap$Bootstrap$Button$primary,
 												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Animation$Spin),
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml2]))
+												$rundis$elm_bootstrap$Bootstrap$Button$block,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Animation$Spin)
 											]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('Spin')
-											]))
-									])),
-								A2(
-								$rundis$elm_bootstrap$Bootstrap$Grid$col,
-								_List_fromArray(
-									[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs4]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
-												model.splitDropState,
-												{
-													items: _List_fromArray(
-														[
-															A2(
-															$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-															_Utils_ap(
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Events$onClick($author$project$Animation$SetSpinOnce)
-																	]),
-																$author$project$Animation$disableNoAnimation(model)),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('Once')
-																])),
-															A2(
-															$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-															_Utils_ap(
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Events$onClick($author$project$Animation$SetSpinNTimes)
-																	]),
-																$author$project$Animation$disableNoAnimation(model)),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(
-																	$author$project$Animation$nTimeText(model))
-																]))
-														]),
-													options: _List_Nil,
-													toggleButton: A2(
-														$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
-														_List_fromArray(
-															[
-																$author$project$Animation$dropdownStyle(model),
-																$rundis$elm_bootstrap$Bootstrap$Button$small
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text(
-																$author$project$Animation$dropdownText(model))
-															])),
-													toggleMsg: $author$project$Animation$SplitMsg
-												})
+												$elm$html$Html$text(
+												$author$project$Animation$spinButtonText(model))
 											]))
 									])),
 								A2(

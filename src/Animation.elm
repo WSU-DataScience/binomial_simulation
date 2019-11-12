@@ -72,12 +72,15 @@ type alias SpinningState = Moving (TicksLeft (SpinsLeft (Positioned {})))
 type AnimationState = NotSpinning NotSpinningState 
                     | Spinning SpinningState
                     | Paused PausedState
+                    | UpdateSample PausedState
+                    | UpdateSampleNoAnimation NotSpinningState
+                    | UpdateDist NotSpinningState 
+
 
 type SpinMode = SpinOnce | SpinNTimes
 
 type alias Model =   { nCorrect : Bool
                      , n : Int
-                     , spinMode : SpinMode
                      , animationOff : Bool
                      , state : AnimationState
                      , config : AnimationConfig
@@ -92,7 +95,6 @@ initN = {str = "20", val = String.toFloat "20", state = Correct }
 
 initModel = { nCorrect = True
             , n = 20
-            , spinMode = SpinOnce
             , animationOff = False
             , state = initAnimationState
             , config = initAnimationConfig
@@ -110,8 +112,6 @@ type Msg  = Tick Time.Posix
           | Spin
           | NewAngleProb (List (Int, Float))
           | UpdateN (NumericData Int)
-          | SetSpinOnce
-          | SetSpinNTimes
           | ToggleAnimation Bool
           | SplitMsg Dropdown.State
 
@@ -136,16 +136,7 @@ getRandomList n model =
 
 getRandomAngleRotations : Model -> Cmd Msg
 getRandomAngleRotations model =
-  let
-    numSpins =
-      case model.spinMode of
-        SpinOnce ->
-          1
-
-        SpinNTimes ->
-          model.n
-  in
-      Random.generate NewAngleProb (getRandomList numSpins model)
+  Random.generate NewAngleProb (getRandomList model.n model)
  
 
 getCurrentLocation model =
@@ -159,6 +150,15 @@ getCurrentLocation model =
     NotSpinning s ->
        s.location
 
+    UpdateSample s ->
+       s.location
+
+    UpdateSampleNoAnimation s ->
+       s.location
+
+    UpdateDist s ->
+       s.location
+
 
 getRemaingSpins model =
   case model.state of
@@ -168,7 +168,10 @@ getRemaingSpins model =
     Paused s ->
        s.spinsLeft
 
-    NotSpinning s ->
+    UpdateSample s ->
+       s.spinsLeft
+
+    _ ->
        []
 
 
@@ -190,19 +193,13 @@ nextSpinningState newRotations newOmega remainingSpins model =
 getPosition : Model -> NotSpinningState
 getPosition model =
   let
-    position =
-      case model.state of
-        Paused s ->
-          s.location
-
-        Spinning s ->
-          s.location
-
-        NotSpinning s ->
-          s.location
+    position = getCurrentLocation model
   in
     {location = position}
 
+updateDist : Model -> AnimationState
+updateDist model =
+  UpdateDist {location = model |> getCurrentLocation }
 
 nextSpinIfNeeded : List (Int, Float) -> Model -> AnimationState
 nextSpinIfNeeded outcomes model =
@@ -211,7 +208,12 @@ nextSpinIfNeeded outcomes model =
       Spinning (nextSpinningState newRotations newOmega rest model)
 
     [] ->
-      NotSpinning (getPosition model)
+      updateDist model
+
+
+notSpinning : NotSpinningState -> AnimationState
+notSpinning state =
+    NotSpinning state
 
 
 lastLocation : List (Int, Float) -> Float
@@ -230,15 +232,19 @@ updateWithoutAnimation outcomes model =
     location = lastLocation outcomes
   in
     
-  { model | state = (NotSpinning {location = location})}
+  { model | state = (UpdateSampleNoAnimation {location = location})}
     
 
-pause : AnimationConfig ->  SpinningState -> AnimationState
-pause config s =
-  Paused  { location = s.finalPosition
-          , spinsLeft = s.spinsLeft
-          , ticksLeft = config.ticksPerPause
-          }
+updateSample : AnimationConfig ->  SpinningState -> AnimationState
+updateSample config s =
+  UpdateSample  { location = s.finalPosition
+                , spinsLeft = s.spinsLeft
+                , ticksLeft = config.ticksPerPause
+                }
+
+pause : PausedState -> AnimationState
+pause state =
+  Paused state
 
 
 full model =
@@ -287,6 +293,15 @@ shiftHand state =
 updateAnimationOnTick : Model -> Model
 updateAnimationOnTick model =
   case (model.state, tickCount model.state) of
+    (UpdateSample s, _) ->
+      {model | state = pause s}
+
+    (UpdateSampleNoAnimation s, _) ->
+      {model | state = updateDist model}
+
+    (UpdateDist s, _) ->
+      {model | state = notSpinning s}
+
     (Paused s, 0) ->
       { model | state = nextSpinIfNeeded s.spinsLeft model}
 
@@ -294,9 +309,7 @@ updateAnimationOnTick model =
       { model | state = Paused (decrementPauseTickCount s)}
 
     (Spinning s, 0) ->
-      { model | state = pause model.config s}
-        |> storeOneObservation s.finalPosition
-
+      { model | state = updateSample model.config s, sample = s.finalPosition :: model.sample}
 
     (Spinning s, _) ->
       { model | state = Spinning (s 
@@ -334,32 +347,16 @@ update msg model =
           ( model
           , Cmd.none) -- ignore button presses when a spin/pause is in process
 
-    SetSpinOnce ->
-      ({ model | spinMode = SpinOnce }, Cmd.none)
-
-    SetSpinNTimes ->
-      ({ model | spinMode = SpinNTimes } , Cmd.none) 
 
     NewAngleProb outcomes ->
-      case (model.animationOff, model.spinMode) of
-        (False, SpinOnce) ->
-          ({ model | state = nextSpinIfNeeded outcomes model}
-          , Cmd.none
-          ) 
-
-        (False, SpinNTimes) ->
+      case model.animationOff of
+        False ->
           ({ model | state = nextSpinIfNeeded outcomes model, sample = []}
           , Cmd.none
           ) 
 
-        (True, SpinOnce) ->
-          ( model 
-            |> updateWithoutAnimation outcomes
-            |> storeOneObservation (lastLocation outcomes)
-          , Cmd.none
-          )
 
-        (True, SpinNTimes) ->
+        True ->
           ( model 
             |> updateWithoutAnimation outcomes
             |> storeAllObservation (List.map Tuple.second outcomes)
@@ -372,13 +369,8 @@ update msg model =
           let
             n = Maybe.withDefault 20 nData.val
             animationOff = n > 50
-            spinMode = 
-              if animationOff then
-                SpinNTimes
-              else
-                model.spinMode
           in
-            ( { model | n = n, sample = [], nCorrect = True, animationOff = animationOff, spinMode = spinMode}
+            ( { model | n = n, sample = [], nCorrect = True, animationOff = animationOff}
             , Cmd.none
             )
 
@@ -391,14 +383,9 @@ update msg model =
     ToggleAnimation isOff ->
       let
         nTooLarge = model.n > 50  
-        spinMode = 
-          if isOff then
-            SpinNTimes
-          else
-            model.spinMode
       in
         
-      ( {model | animationOff = (isOff || nTooLarge), spinMode = spinMode}
+      ( {model | animationOff = (isOff || nTooLarge)}
       , Cmd.none
       )
 
@@ -433,33 +420,10 @@ spinNTimesText model =
         |> String.join " "
 
 
-nTimeText model =
+spinButtonText model =
   model.n 
   |> String.fromInt
-  |> \s -> s ++ " Times"
-
-
-dropdownText model =
-  case model.spinMode of
-    SpinOnce ->
-      "Once"     
-
-    SpinNTimes ->
-      nTimeText model
-
-
-disableNoAnimation model =
-  if model.animationOff then
-    [class "disabled", disabled True]
-
-  else
-    []
-
-dropdownStyle model =
-  if model.animationOff then
-    Button.secondary
-  else
-    Button.primary
+  |> \s -> "Spin " ++ s ++ " Times"
 
 nToLargeWarning = errorView (\model -> model.n > 50) "Animation off when n > 50" 
 
@@ -468,32 +432,11 @@ spinButtonGrid model  =
     [ Form.group []
         [
           Grid.row []
-            [ Grid.col  [ Col.xs2 ]
+            [ Grid.col  [ Col.xs6 ]
                         [ Button.button
-                            [ Button.primary, Button.small, Button.onClick Spin, Button.attrs [Spacing.ml2]]
-                            [ Html.text "Spin" ]
+                            [ Button.primary, Button.small, Button.block, Button.onClick Spin]
+                            [ Html.text (spinButtonText model) ]
                         ]
-            , Grid.col [ Col.xs4 ]
-                       [
-                          div []
-                              [ Dropdown.dropdown
-                                  model.splitDropState
-                                  { options = []
-                                  , toggleMsg = SplitMsg
-                                  , toggleButton =
-                                      Dropdown.toggle [ (dropdownStyle model), Button.small] [ text (dropdownText model) ]
-                                  , items =
-                                      [ Dropdown.buttonItem 
-                                          ([ onClick SetSpinOnce ] ++ (disableNoAnimation model))
-                                          [ text "Once"] 
-                                      , Dropdown.buttonItem 
-                                          ([ onClick SetSpinNTimes ] ++ (disableNoAnimation model)) --, class "disabled", disabled (not model.nCorrect)]
-                                          [ text  (nTimeText model)]
-                                      ]
-                                  } 
-
-                              ]
-                       ]
             , Grid.col  [ Col.xs6 ]
                         [ Checkbox.custom 
                             [ Checkbox.id "animationChkbox"
@@ -531,9 +474,6 @@ debugView model =
         , br [] [] 
         , br [] [] 
         , makeHtmlText "n: " (model.n |> Debug.toString)
-        , br [] [] 
-        , br [] [] 
-        , makeHtmlText "spinMode: " (model.spinMode |> Debug.toString)
         , br [] [] 
         , br [] [] 
         , makeHtmlText "AnimationState: " (model.animationOff |> Debug.toString)
@@ -574,6 +514,15 @@ getSpinnerModel p visibility successLbl failureLbl model =
           baseSpinner |> updateWithLocation s.location
 
         Paused s ->
+          baseSpinner |> updateWithLocation s.location
+
+        UpdateSample  s ->
+          baseSpinner |> updateWithLocation s.location
+
+        UpdateSampleNoAnimation s ->
+          baseSpinner |> updateWithLocation s.location
+
+        UpdateDist s ->
           baseSpinner |> updateWithLocation s.location
 
 

@@ -8,8 +8,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Bootstrap.CDN as CDN
+import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Form as Form
+import Bootstrap.Form.InputGroup as InputGroup
+import Bootstrap.Form.Input as Input
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 
@@ -25,10 +29,14 @@ main =
     }
 
 -- Model
+type Statistic = NotSelected | Count | Proportion
 
 type alias Model = { successLbl : LblData
                    , failureLbl : LblData
                    , pData : NumericData Float
+                   , nData : NumericData Int
+                   , pulldown : Dropdown.State
+                   , statistic : Statistic
                    }
 
 -- Initialize
@@ -42,6 +50,9 @@ initLbl = {str = "", state = Blank}
 initModel = { successLbl = initLbl
             , failureLbl = initLbl
             , pData = initFloat
+            , nData = initInt
+            , pulldown = Dropdown.initialState
+            , statistic = NotSelected
             }
 
 
@@ -53,6 +64,10 @@ init _ = (initModel, Cmd.none )
 type Msg  = ChangeSuccessLbl String
           | ChangeFailureLbl String
           | ChangeP String
+          | ChangeN String
+          | ChangePulldown Dropdown.State
+          | UseCount
+          | UseProp
 
 
 -- update functions
@@ -75,10 +90,36 @@ isPInOfBounds p = (p >= 0) && (p <= 1)
 updatePData : String -> NumericData Float -> NumericData Float 
 updatePData = updateNumeric String.toFloat isPInOfBounds
 
+isNInOfBounds n = n > 0
+
+nEntryState = numericEntryState String.toInt isNInOfBounds
+
+updateNData : String -> NumericData Int -> NumericData Int 
+updateNData = updateNumeric String.toInt isNInOfBounds
+
+
+updateN : String -> Model -> Model
+updateN input model =
+  {model | nData = model.nData |> updateNData input }
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    ChangePulldown state ->
+        ({model | pulldown = state }
+        , Cmd.none
+        )
+
+    UseCount ->
+        ({model | statistic = Count}
+        , Cmd.none
+        )
+
+    UseProp ->
+        ({model | statistic = Proportion}
+        , Cmd.none
+        )
+
     ChangeSuccessLbl lbl ->
         ( {model | successLbl = model.successLbl |> updateLabel lbl model.failureLbl.str}
         , Cmd.none
@@ -96,12 +137,19 @@ update msg model =
         )
 
 
--- subscription
+    ChangeN text ->
+        ( model
+            |> updateN text
+        , Cmd.none
+        )
 
+
+-- subscription
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Dropdown.subscriptions model.pulldown ChangePulldown ]
 
 
 -- view helpers
@@ -110,7 +158,7 @@ successEntry = entryView "Label" "Success"
 
 failureEntry = entryView "Label" "Failure"
 
-pEntry = entryView "0.33" "p" 
+pEntry = entryView "" "p" 
 
 hasLabelError model  =
     (model.successLbl.state == OtherwiseIncorrect) || (model.failureLbl.state == OtherwiseIncorrect)
@@ -121,6 +169,8 @@ hasPError model =
     (model.pData.state == NotANumber) || (model.pData.state == OutOfBounds)
 
 pError = errorView hasPError "p is a number between 0 and 1."
+
+nEntry = entryView "" "n" 
 
 validEntry state =
     case state of
@@ -134,8 +184,67 @@ validEntry state =
             Form.invalidFeedback [] [ text "Something not quite right." ]
 
 
+    --   model.pulldown
+    --   { options = [ ]
+    --   , toggleMsg = ChangePulldown
+    --   , toggleButton =
+    --       Dropdown.toggle [ Button.primary, Button.small] [ Html.text (statPulldownText model.statistic) ]
+    --   , items =
+    --       [ Dropdown.buttonItem [ onClick UseCount ] [ Html.text "Count" ]
+    --       , Dropdown.buttonItem [ onClick UseProp ] [ Html.text "Proportion" ]
+    --       ]
+    --   } 
+statPulldownText model =
+  case model.statistic of
+    NotSelected ->
+      "Select"
 
-singleObservationLayout success failure p labelErr pErr =
+    Count ->
+      "Count"
+
+    Proportion ->
+      "Proportion" 
+
+
+inputFeedback model =
+  case model.statistic of
+    NotSelected ->
+      []
+
+    _ ->
+      [Input.success]
+
+pulldownOutline model =
+  case model.statistic of
+    NotSelected ->
+        Button.outlinePrimary
+    
+    _ ->
+        Button.outlineSecondary
+
+statPulldown model =
+    InputGroup.config
+        ( InputGroup.text ([ Input.placeholder (statPulldownText model), Input.disabled True] ++ inputFeedback model) )
+        |> InputGroup.small
+        |> InputGroup.predecessors
+            [ InputGroup.span [] [ text "Statistic"] ]
+        |> InputGroup.successors
+            [InputGroup.dropdown
+                model.pulldown
+                { options = []
+                , toggleMsg = ChangePulldown
+                , toggleButton =
+                    Dropdown.toggle [ pulldownOutline model, Button.small ] []
+                , items =
+                    [ Dropdown.buttonItem [ onClick UseCount ] [ Html.text "Count" ]
+                    , Dropdown.buttonItem [ onClick UseProp ] [ Html.text "Proportion" ]
+                    ]
+                }
+            ]
+
+        |> InputGroup.view
+
+singleObservationLayout success failure p n stat labelErr pErr =
   Form.form []
     [ h4 [] [ Html.text "A Single Observation"]
     , Html.br [] []
@@ -150,8 +259,14 @@ singleObservationLayout success failure p labelErr pErr =
         , Grid.row []
             [ Grid.col [ Col.xs7 ]
                 [ failure ]
-            , Grid.col [ Col.xs2 ]
-                []
+            , Grid.col [ Col.xs5 ]
+                [ n ]
+            ]
+        , Grid.row []
+            [ Grid.col [ Col.xs7 ]
+                [ stat ]
+            , Grid.col [ Col.xs5 ]
+                [ ]
             ]
         ]
     , labelErr 
@@ -164,6 +279,8 @@ singleObservationView model =
        (successEntry ChangeSuccessLbl model.successLbl.state)
        (failureEntry ChangeFailureLbl model.failureLbl.state)
        (pEntry ChangeP model.pData.state)
+       (nEntry ChangeN model.nData.state)
+       (statPulldown model)
        (labelError model)
        (pError model)
 
@@ -176,29 +293,29 @@ exampleSingleObservationView =
       { successLbl = "Correct"
       , failureLbl = "Incorrect"
       , p = 0.25
+      , n = 20
+      , statistic = "Count"
       }
   in
     singleObservationLayout
         (Html.text ("Success: " ++ state.successLbl))
         (Html.text ("Failure: " ++ state.failureLbl))
         (Html.text ("p: " ++ (String.fromFloat state.p)))
+        (Html.text ("n: " ++ (String.fromFloat state.n)))
+        (Html.text ("Statistic: " ++ state.statistic))
         (Html.text "")
         (Html.text "")
 
 
 debugView model =
     div [] 
-            [ model.successLbl.str |> makeHtmlText "Success: "
+            [ model.successLbl |> Debug.toString |> makeHtmlText "Success: "
             , Html.br [][]
-            , model.successLbl.state |> entryStateView "Success State: "
+            , model.failureLbl |> Debug.toString |> makeHtmlText "Failure: "
             , Html.br [][]
-            , model.failureLbl.str |> makeHtmlText "Failure: "
+            , model.pData |> Debug.toString |> makeHtmlText "pData: "
             , Html.br [][]
-            , model.failureLbl.state |> entryStateView "Failure State: "
-            , Html.br [][]
-            , model.pData.str |> makeHtmlText "p string: "
-            , Html.br [][]
-            , model.pData.state |> entryStateView "p State: "
+            , model.nData |> Debug.toString |> makeHtmlText "nData: "
             , Html.br [][]
             ]
 

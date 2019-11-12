@@ -53,8 +53,8 @@ type alias Defaults = { n : Int
 defaults = { n = 200
            , p = 0.25
            , trimAt = 100
-           , collectNs = [1, 10, 100, 1000, 10000, 100000]
-           , minTrialsForPValue = 1000
+           , collectNs = [10, 100, 1000, 10000, 100000]
+           , minTrialsForPValue = 100
            }
 
 
@@ -71,7 +71,6 @@ type alias Model = { n : Int
                    , ys : Dict Int Int
                    , statistic : Statistic
                    , binomGen : (Float -> Int)
-                   , pulldown : Dropdown.State
                    , buttonVisibility : Visibility
                    , tail : Tail
                    , xData : NumericData Float
@@ -101,7 +100,6 @@ initModel = { n = defaults.n
             , ys = Dict.empty
             , statistic = NotSelected
             , binomGen = getBinomGen defaults.n defaults.p
-            , pulldown = Dropdown.initialState
             , buttonVisibility = Hidden
             , tail = None
             , xData = initFloat
@@ -117,14 +115,15 @@ init _ = (initModel, Cmd.none )
 
 
 type Msg  = Collect Int
+          | OneNewStatistic Int
           | NewStatistics (List Float)
           | UpdateN (NumericData Int)
           | UpdateP (NumericData Float)
-          | ChangePulldown Dropdown.State
           | UseCount
           | UseProp
           | ChangeTail Tail
           | ChangeX String
+          | Reset
 
 
 -- update helpers
@@ -315,6 +314,14 @@ update msg model =
         )
 
 
+    OneNewStatistic numSuccess ->
+        let
+            newYs = updateY numSuccess model.ys
+        in
+            ( { model | ys = newYs, trials = model.trials + 1 }
+            , Cmd.none
+            )
+
     NewStatistics ws ->
         ( model 
             |> updateYs ws
@@ -322,6 +329,18 @@ update msg model =
         , Cmd.none
         )
 
+    Reset ->
+        let
+            newModel = model 
+                        |> resetYs
+                        |> resetPValue
+                        |> resetX
+                        |> resetTail
+
+        in
+            ( newModel
+            , Cmd.none
+            )
 
     UpdateP pData ->
         let
@@ -331,7 +350,6 @@ update msg model =
                         model 
                             |> updateP pData
                             |> resetYs
-                            |> updateBinomGen
                             |> resetPValue
                             |> resetX
                             |> resetTail
@@ -340,6 +358,7 @@ update msg model =
                         model
         in
             ( newModel
+                |> updateBinomGen
             , Cmd.none
             )
 
@@ -352,7 +371,6 @@ update msg model =
                         model 
                             |> updateN nData
                             |> resetYs
-                            |> updateBinomGen
                             |> resetPValue
                             |> resetX
                             |> resetTail
@@ -361,13 +379,10 @@ update msg model =
                         model
         in
             ( newModel
+                |> updateBinomGen
             , Cmd.none
             )
 
-    ChangePulldown state ->
-        ({model | pulldown = state }
-        , Cmd.none
-        )
 
     UseCount ->
         ({model | statistic = Count}
@@ -393,33 +408,17 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Dropdown.subscriptions model.pulldown ChangePulldown ]
+    Sub.none
 
 -- debug views
-statPulldownText state =
-  case state of
-    NotSelected ->
-      "Select Statistic"
 
-    Count ->
-      "Count"
-
-    Proportion ->
-      "Proportion" 
-
-pulldownView model =
-  Dropdown.dropdown
-      model.pulldown
-      { options = [ ]
-      , toggleMsg = ChangePulldown
-      , toggleButton =
-          Dropdown.toggle [ Button.primary, Button.small] [ Html.text (statPulldownText model.statistic) ]
-      , items =
-          [ Dropdown.buttonItem [ onClick UseCount ] [ Html.text "Count" ]
-          , Dropdown.buttonItem [ onClick UseProp ] [ Html.text "Proportion" ]
-          ]
-      } 
+resetButton =
+    Button.button
+        [ Button.primary
+        , Button.onClick Reset
+        , Button.small
+        ]
+        [ Html.text "Reset" ]
 
 pullOffThree s =
     let
@@ -476,8 +475,7 @@ collectButtons ns =
 
 collectButtonView model =
     collectButtonGrid 
-        ( pulldownView model
-        )
+        ( resetButton)
         ( if model.buttonVisibility == Shown then 
             collectButtons defaults.collectNs 
           else 
@@ -503,15 +501,16 @@ notEnoughTrials model =
     model.trials < defaults.minTrialsForPValue 
 
 pvalueView model =
-    case notEnoughTrials model of
-        True ->
-            pValueGrid 
-                (div [] []) 
-                (div [] []) 
-                ( errorView notEnoughTrials "Need at least 1000 collected statistics" model)
+    let
+        output = 
+            case notEnoughTrials model of
+                True ->
+                    errorView notEnoughTrials  ("Need at least " ++ (defaults.minTrialsForPValue |> String.fromInt) ++ " collected statistics") model
 
-        False ->
-            pValueGrid (pvalueButtons model) (xEntry ChangeX model.xData.state) (outputView model)
+                False ->
+                    outputView model
+    in
+        pValueGrid (pvalueButtons model) (xEntry ChangeX model.xData.state) output
 
 pvalueButtons model =
   ButtonGroup.radioButtonGroup []
@@ -529,36 +528,108 @@ pvalueButtons model =
                   [ Html.text "Two-tail" ]
           ]
 
-distPlot : Model -> Spec
-distPlot model = 
+
+combineDistColumns : (Int, Int) -> (List Int, List Int) -> (List Int , List Int)
+combineDistColumns pair columns =
+  let
+    (newX, newY) = pair
+    (oldXs, oldYs) = columns
+  in
+    (newX :: oldXs, newY :: oldYs)
+
+
+distColumns : Dict Int Int -> (List Float, List Float)
+distColumns yDict =
+  yDict
+  |> Dict.toList
+  |> List.foldl combineDistColumns ([], [])
+  |> Tuple.mapBoth (List.map toFloat) (List.map toFloat)
+
+
+countPairToDots : (Int, Int) -> (List Int, List Int)
+countPairToDots pair =
+  let
+    (x, cnt) = pair
+    xs = List.repeat cnt x
+    ys = List.range 1 cnt
+  in
+    (xs, ys)
+
+
+combineDotColumns : (Int, Int) -> (List Int, List Int) -> (List Int, List Int)
+combineDotColumns nextPair columns =
+  let
+    (newXs, newYs) = countPairToDots nextPair
+    (oldXs, oldYs) = columns
+  in
+    (newXs ++ oldXs, newYs ++ oldYs)
+
+
+dotColumns : Dict Int Int -> (List Float, List Float)
+dotColumns yDict =
+  let
+    countList = Dict.toList yDict
+  in
+    countList
+    |> List.foldl combineDotColumns ([], [])
+    |> Tuple.mapBoth (List.map toFloat) (List.map toFloat)
+
+
+updateMax : (Int, Int) -> Int -> Int
+updateMax pair currentMax =
+  let
+    ( _ , newY) = pair
+  in
+    Basics.max newY currentMax
+
+maxHeight : Dict Int Int -> Int
+maxHeight yDict =
+  yDict
+  |> Dict.toList
+  |> List.foldl updateMax 0
+
+
+distPlot model =
     let
         mean = meanBinom model.n model.p
-        expr = 
+        sd = sdBinom model.n model.p
+        expr =
             case (model.tail, model.xData.val) of
                 (_, Nothing) -> "false"
                 (None, _) -> "false"
                 (Left, Just limit) ->  "datum.X <= " ++ (String.fromFloat limit)
                 (Right, Just limit) -> "datum.X >= " ++ (String.fromFloat limit)
-                (Two, Just limit)->  
+                (Two, Just limit)->
                     let
-                        (lower, upper) = twoTailLimits mean limit 
+                        (lower, upper) = twoTailLimits mean limit
                     in
-                        if (mean == limit) then "true" 
-                        else"datum.X <= " ++ (toString lower) ++ " || " ++
-                             "datum.X >= " ++ (toString upper)
+                        if (mean == limit) then "true"
+                        else"datum.X <= " ++ (String.fromFloat lower) ++ " || " ++
+                             "datum.X >= " ++ (String.fromFloat upper)
 
-        xs = 
-            let
-                cnts = model.ys |> Dict.keys |> List.map toFloat
-            in
-                case model.statistic of
-                    Proportion ->
-                        cnts |> List.map (\x -> x/(toFloat model.n))
+        isLarge = model.trials > 5000
+        (xs, ys) =
+          if isLarge then
+            distColumns model.ys
+          else
+            dotColumns model.ys
 
-                    _ ->
-                        cnts
+        mark = if isLarge then bar else circle
 
-        ys = model.ys |> Dict.values |> List.map (toFloat >> (\x -> x/(toFloat model.trials)))
+        maxY = Basics.max 100.0 (model.ys |> maxHeight |> toFloat)
+
+        (minX, maxX) =  ( if model.n < defaults.trimAt then
+                            0.0
+                          else
+                            mean - 4*sd
+                        , if model.n < defaults.trimAt then
+                            model.n |> toFloat
+                          else
+                            mean + 4*sd
+                        )
+
+
+
         d = dataFromColumns []
             << dataColumn "X" (nums xs)
             << dataColumn "P(X)" (nums ys)
@@ -566,15 +637,22 @@ distPlot model =
         trans =
             transform
                 << VegaLite.filter (fiExpr expr)
-        
-        encPMF = 
+
+        encPMF =
             encoding
-                << position X [ pName "X", pMType Quantitative]
-                << position Y [ pName "P(X)", pAggregate opSum, pMType Quantitative ]
+                << position X [ pName "X"
+                              , pMType Quantitative
+                              , pScale [scDomain (doNums [minX, maxX])]
+                              ]
+                << position Y [ pName "P(X)"
+                              , pAggregate opSum
+                              , pMType Quantitative
+                              , pScale [scDomain (doNums [0.0, maxY])]
+                              ]
                 << tooltips [ [ tName "X", tMType Quantitative]
                             , [ tName "P(X)", tMType Quantitative, tFormat ".3f"]
                             ]
-        
+
         selectedEnc =
             encoding
                 << position X [ pName "X", pMType Quantitative]
@@ -591,10 +669,11 @@ distPlot model =
             , VegaLite.height 600
             ,
             d []
-            , layer [ asSpec [ bar [], encPMF []]
-                    , asSpec  [ bar [], selectedEnc [], trans []]
+            , layer [ asSpec [ mark [], encPMF []]
+                    , asSpec  [ mark [], selectedEnc [], trans []]
                     ]
             ]
+
 
 
 
