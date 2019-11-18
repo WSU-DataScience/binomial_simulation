@@ -102,11 +102,19 @@ updateSampleSuccess model =
     _ -> 
       model
 
+updateCollectSuccess : Model -> Model
+updateCollectSuccess model =
+  let
+    (newCollectModel, _) = model.collect |> CollectStats.update (CollectStats.ChangeSuccessLbl model.singleObservation.successLbl)
+  in
+    {model | collect = newCollectModel}
+
+
 updateSpinnerFailure : Model -> Model
 updateSpinnerFailure model =
   case model.singleObservation.failureLbl.state of
     Correct ->
-      {model | spinner = (updateFailure model.singleObservation.failureLbl.str model.spinner)}
+      {model | spinner = updateFailure model.singleObservation.failureLbl.str model.spinner}
 
     _ -> 
       model
@@ -171,12 +179,11 @@ updateSampleStatistic model =
 updateSpinnerVisibility : Model -> Model
 updateSpinnerVisibility model = 
       let
-        canShow = (  model.singleObservation.successLbl.state == Correct 
+        canShow = model.singleObservation.successLbl.state == Correct 
                   && model.singleObservation.failureLbl.state == Correct
                   && model.singleObservation.pData.state      == Correct
                   && model.singleObservation.nData.state      == Correct
                   && model.singleObservation.statistic        /= NotSelected 
-                  )
         vis = if canShow then Shown else Hidden
       in
         { model  | spinner = updateVisibility vis model.spinner}
@@ -226,7 +233,16 @@ updateAnimationN model =
     _ ->
       model
     
-
+updateAnimationOff : Model -> Model
+updateAnimationOff model =
+  let
+      n = Maybe.withDefault 20 model.singleObservation.nData.val
+      turnOff = n >= CollectStats.defaults.trimAt
+      oldAnimation = model.animation
+      newAnimation = { oldAnimation | animationOff = turnOff }
+  in
+      { model | animation = newAnimation }
+  
 update msg model = 
   case msg of 
     -- Note: There are no singleObservation commands, 
@@ -254,6 +270,8 @@ update msg model =
             |> updateSpinner
             |> updateSample
             |> updateAnimationN
+            |> updateCollectSuccess
+            |> updateAnimationOff
         in 
            (finalModel
            , distPlotCmd finalModel.collect
@@ -421,6 +439,21 @@ debugView model =
         , br [] [] 
         , makeHtmlText "collect: " (model.collect |> Debug.toString)
         , br [] [] 
+        , br [] [] 
+        , makeHtmlText "countLimits: " (model.collect.ys 
+                                        |> countLimits model.collect.n
+                                        |> Debug.toString)
+        , br [] [] 
+        , makeHtmlText "xLimits: " (model.collect
+                                   |> xLimits
+                                   |> Debug.toString)
+        , br [] [] 
+        , makeHtmlText "largeLimits: " (model.collect
+                                        |> largeLimits
+                                        |> Debug.toString)
+        , br [] [] 
+        , makeHtmlText "xData: " (model.collect.xData
+                                        |> Debug.toString)
         , br [] [] 
         ]
   else

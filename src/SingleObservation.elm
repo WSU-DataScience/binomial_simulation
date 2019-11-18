@@ -154,11 +154,11 @@ subscriptions model =
 
 -- view helpers
 
-successEntry = entryView "Label" "Success" 
+successEntry = entryView "Label" "Success" 1 
 
-failureEntry = entryView "Label" "Failure"
+failureEntry = entryView "Label" "Failure" 2
 
-pEntry = entryView "" "p" 
+pEntry = entryView "" "p" 3
 
 hasLabelError model  =
     (model.successLbl.state == OtherwiseIncorrect) || (model.failureLbl.state == OtherwiseIncorrect)
@@ -170,7 +170,7 @@ hasPError model =
 
 pError = errorView hasPError "p is a number between 0 and 1."
 
-nEntry = entryView "" "n" 
+nEntry = entryView "" "n" 4
 
 validEntry state =
     case state of

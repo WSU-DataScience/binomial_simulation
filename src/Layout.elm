@@ -17,9 +17,9 @@ mainGrid singleObs collectButtons pValue spinner spinButton sample debug =
                 , Grid.row []
                     [ Grid.col  [ Col.md4] 
                                 [ singleObs ]
-                    , Grid.col [ Col.md4]
+                    , Grid.col [ Col.md3]
                                [ collectButtons ]
-                    , Grid.col [ Col.md4]
+                    , Grid.col [ Col.md5]
                                [ pValue ]
                     ]
                 , Grid.row []
@@ -45,7 +45,7 @@ mainGrid singleObs collectButtons pValue spinner spinButton sample debug =
               ]
 
 singleObsGrid successInput failureInput pInput nInput =
-    h4 [] [ Html.text "A Single Observation"
+    h4 [] [ Html.text "Simulation Setup"
           , Html.br [] []
           , Form.group []
               [
@@ -105,10 +105,10 @@ sampleGrid statistic =
 collectButtonGrid reset buttons count =
     div [] [ Form.group []
               [ Grid.row []
-                  [ Grid.col  [ Col.xs6 ]
-                              [ Html.h4 [] [Html.text "Statistics"]
+                  [ Grid.col  [ Col.xs9 ]
+                              [ Html.h4 [] [Html.text "Collect Statistics"]
                               ]
-                  , Grid.col  [ Col.xs6 ]
+                  , Grid.col  [ Col.xs3 ]
                               [ reset ]
                               
                   ]
@@ -132,19 +132,18 @@ collectButtonGrid reset buttons count =
 pValueGrid tailButtons xInput output =
     div [] [ Form.group []
               [ Grid.row []
-                  [ Grid.col  [ Col.xs4 ]
+                  [ Grid.col  [ Col.xs12 ]
                               [ Html.h4 [] [Html.text "P-Value"]
                               ]
-                  --, Grid.col  [ Col.xs2 ]
-                  --            [ Html.text "Tail" ]
-                  , Grid.col  [ Col.xs8 ]
-                              [ tailButtons ]
-                              
                   ]
               , Grid.row []
-                  [ Grid.col  [ Col.xs6 ]
+                  [ Grid.col  [ Col.xs4 ]
                               [ xInput ]
-                  , Grid.col  [ Col.xs6 ]
+                  , Grid.col  [ Col.xs8 ]
+                              [ tailButtons ]
+                  ]
+              , Grid.row []
+                  [ Grid.col  [ Col.xs12 ]
                               [ output ]
                               
                   ]
