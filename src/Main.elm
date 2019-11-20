@@ -3,7 +3,9 @@ port module Main exposing (..)
 import Time
 import Debug
 import Layout exposing (..)
+import Defaults exposing (defaults)
 import DataEntry exposing (..)
+import DistPlot exposing (..)
 import SingleObservation exposing (..)
 import Spinner exposing (..)
 import Animation exposing (..)
@@ -15,6 +17,7 @@ import Html.Attributes exposing (..)
 import VegaLite exposing (..)
 import Bootstrap.Dropdown as Dropdown
 
+
 main =
   Browser.element
     { init = init
@@ -24,11 +27,13 @@ main =
     }
 
 
+
 type Msg = SingleObservationMsg SingleObservation.Msg 
          | SpinnerMsg Spinner.Msg
          | AnimationMsg Animation.Msg
          | SampleMsg OneSample.Msg
          | CollectMsg CollectStats.Msg
+
 
 type alias Model = 
     { singleObservation : SingleObservation.Model
@@ -39,6 +44,8 @@ type alias Model =
     , debug : Bool
     }
 
+
+initModel : Model
 initModel = { singleObservation = SingleObservation.initModel
             , spinner = Spinner.initModel
             , animation = Animation.initModel
@@ -46,6 +53,7 @@ initModel = { singleObservation = SingleObservation.initModel
             , collect = CollectStats.initModel
             , debug = False
             }
+
 
 init : () -> (Model, Cmd Msg)
 init _ = (initModel, Cmd.none )
@@ -132,6 +140,15 @@ updateSampleFailure model =
 
     _ -> 
       model
+
+updateSampleFromCollect : Model -> Model
+updateSampleFromCollect model =
+  case model.collect.lastCount of
+    Nothing ->
+      model
+
+    Just numSuccess ->
+      { model | sample = model.sample |> updateSampleFromNumSuccess numSuccess }
 
 
 updateSpinnerP : Model -> Model
@@ -237,7 +254,7 @@ updateAnimationOff : Model -> Model
 updateAnimationOff model =
   let
       n = Maybe.withDefault 20 model.singleObservation.nData.val
-      turnOff = n >= CollectStats.defaults.trimAt
+      turnOff = n >= defaults.trimAt
       oldAnimation = model.animation
       newAnimation = { oldAnimation | animationOff = turnOff }
   in
@@ -247,9 +264,10 @@ update msg model =
   case msg of 
     -- Note: There are no singleObservation commands, 
     --       but we do need to send a OneSample command when the labels change
+
     SingleObservationMsg soMsg -> 
       let 
-        (newModel, newCmd) = SingleObservation.update soMsg (.singleObservation model)
+        (newModel, _ ) = SingleObservation.update soMsg (.singleObservation model)
         (collectModel, _) =
           case soMsg of
             SingleObservation.ChangeP _ ->
@@ -274,14 +292,11 @@ update msg model =
             |> updateAnimationOff
         in 
            (finalModel
-           , distPlotCmd finalModel.collect
+           , Cmd.batch [ samplePlotCmd model , distPlotCmd model]
            )
 
-    SpinnerMsg sPmsg -> 
-      let (newModel, newCmd) = Spinner.update sPmsg (.spinner model)
-        in ({ model | spinner = newModel } 
-           , Cmd.map SpinnerMsg newCmd
-           )
+    SpinnerMsg _ -> 
+      ( model, Cmd.none )
 
 
     AnimationMsg aMsg -> 
@@ -329,13 +344,13 @@ update msg model =
         finalCmd =
           case newModel.state of
             Animation.UpdateSample _ ->
-              samplePlotCmd finalModel
+              Cmd.batch [ samplePlotCmd finalModel , distPlotCmd finalModel]
 
             UpdateSampleNoAnimation _ ->
-              samplePlotCmd finalModel
+              Cmd.batch [ samplePlotCmd finalModel , distPlotCmd finalModel]
 
             UpdateDist _ ->
-              distPlotCmd collectModel
+              Cmd.batch [ samplePlotCmd finalModel , distPlotCmd finalModel]
 
             _ ->
               Cmd.map AnimationMsg newCmd
@@ -364,15 +379,28 @@ update msg model =
     CollectMsg cMsg -> 
       let 
         (newModel, newCmd) = CollectStats.update cMsg (.collect model)
+        (sampleModel, _) = 
+          case (cMsg, newModel.lastCount) of
+            (_, Nothing) ->
+              ( model.sample, Cmd.none)
+            
+            (_, Just numSuccess) ->
+              ( model.sample |> updateSampleFromNumSuccess numSuccess
+              , Cmd.none
+              )
+
+        finalModel = { model | collect = newModel, sample = sampleModel }
+
         finalCmd =
           case cMsg of
             Collect _ ->
               Cmd.map CollectMsg newCmd
 
             _ ->
-              distPlotCmd newModel
+              Cmd.batch [ samplePlotCmd finalModel , distPlotCmd finalModel]
 
-      in ({ model | collect = newModel } 
+
+      in ( finalModel
          , finalCmd
          )
 
@@ -389,7 +417,7 @@ samplePlotCmd model =
       samplePlotToJS (samplePlot n sample)
 
 distPlotCmd model =
-    distPlotToJS (distPlot model)
+    distPlotToJS (distPlot model.collect)
 
 -- send samplePlot to vega
 port samplePlotToJS : Spec -> Cmd msg
@@ -439,21 +467,6 @@ debugView model =
         , br [] [] 
         , makeHtmlText "collect: " (model.collect |> Debug.toString)
         , br [] [] 
-        , br [] [] 
-        , makeHtmlText "countLimits: " (model.collect.ys 
-                                        |> countLimits model.collect.n
-                                        |> Debug.toString)
-        , br [] [] 
-        , makeHtmlText "xLimits: " (model.collect
-                                   |> xLimits
-                                   |> Debug.toString)
-        , br [] [] 
-        , makeHtmlText "largeLimits: " (model.collect
-                                        |> largeLimits
-                                        |> Debug.toString)
-        , br [] [] 
-        , makeHtmlText "xData: " (model.collect.xData
-                                        |> Debug.toString)
         , br [] [] 
         ]
   else
@@ -519,5 +532,6 @@ view model =
       (spinButtonView model)
       (Html.map SampleMsg <| maybeSampleView model.spinner.visibility model.sample)
       (debugView model) 
+      model.spinner.visibility
 
 

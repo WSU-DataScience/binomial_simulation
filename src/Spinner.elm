@@ -518,5 +518,5 @@ exampleSingleObservation =
 
 view : Model -> Html Msg
 view model =
-    mainGrid (exampleSingleObservationView) blankCollectButtons  blankPvalue (exampleSpinner) blankSpinButton blankSample blankDistPlot 
+    mainGrid (exampleSingleObservationView) blankCollectButtons  blankPvalue (exampleSpinner) blankSpinButton blankSample blankDistPlot Hidden
 

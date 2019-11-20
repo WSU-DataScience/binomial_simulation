@@ -138,6 +138,18 @@ updateSampleFromOutcome ws model =
                  , numFailures = numFailures
     }
 
+updateSampleFromNumSuccess : Int -> Model -> Model
+updateSampleFromNumSuccess numSuccess model = 
+  let
+    sample = model.sample
+    numFailures = model.n - numSuccess
+    newSample = 
+        { sample | numSuccess = numSuccess
+                , numFailures = numFailures
+        }
+  in
+    { model | sample = newSample }
+
 
 updateSuccessLbl : String -> Sample -> Sample
 updateSuccessLbl newLbl sample =
@@ -317,5 +329,5 @@ debugView model =
 
 view : Model -> Html Msg
 view model =
-    mainGrid (exampleSingleObservationView) (debugView model)  blankPvalue (exampleSpinner) (maybeSampleView Shown model) blankSample blankDistPlot 
+    mainGrid (exampleSingleObservationView) (debugView model)  blankPvalue (exampleSpinner) (maybeSampleView Shown model) blankSample blankDistPlot Hidden
 

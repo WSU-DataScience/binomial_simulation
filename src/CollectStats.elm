@@ -10,8 +10,13 @@ import Dict exposing (..)
 import Debug exposing (..)
 import Html.Attributes exposing (..)
 import DataEntry exposing (..)
+import Display exposing (stringAndAddCommas, changeThousandsToK)
+import CountDict exposing (..)
+import PValue exposing (..)
 import Binomial exposing (..)
+import Defaults exposing (defaults)
 import Layout exposing (..)
+import DistPlot exposing (..)
 import SingleObservation exposing (..)
 import Spinner exposing (..)
 import OneSample exposing (..)
@@ -24,14 +29,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Dropdown as Dropdown
-import List.Extra exposing (..)
 import VegaLite exposing (..)
-import Katex as K exposing  ( Latex
-                            , human
-                            , inline
-                            , display
-                            )
-
 
 -- main for debugging
 
@@ -46,46 +44,12 @@ main =
 
 -- Model
 
-type Tail = Left | Right | Two | None
-
-type alias Defaults = { n : Int 
-                      , p : Float
-                      , trimAt : Int
-                      , collectNs : List Int
-                      , minTrialsForPValue : Int
-                      , distMinHeight : Float
-                      , numSD : Float
-                      , pValDigits : Int
-                      , distPlotWidth : Int
-                      , distPlotHeight : Int
-                      }
-
-defaults =  { n = 200
-            , p = 0.25
-            , trimAt = 100
-            , collectNs = [10, 100, 1000, 10000, 100000]
-            , minTrialsForPValue = 100
-            , distMinHeight = 100.0
-            , numSD = 4.0
-            , pValDigits = 4
-            , distPlotWidth = 700
-            , distPlotHeight = 525  
-            }
-
-
-
-type alias SquareHistogram = { vs : Int
-                             , ks : Int
-                             , ts : Float
-                             }
-
-type PValue a = NoPValue | Lower a | Upper a | TwoTail a a 
 
 type alias Model = { n : Int 
                    , p : Float
                    , trials : Int
                    , successLbl : String
-                   , ys : Dict Int Int
+                   , ys : CountDict
                    , statistic : Statistic
                    , binomGen : (Float -> Int)
                    , buttonVisibility : Visibility
@@ -93,24 +57,13 @@ type alias Model = { n : Int
                    , xData : NumericData Float
                    , pValue : PValue Int
                    , output : String
+                   , tailLimit : PValue Float
+                   , lastCount : Maybe Int
                    }
 
-getBinomGen : Int -> Float -> (Float -> Int)
-getBinomGen n p =
-    let
-        (min, _) = trimmedXRange defaults.trimAt n p
-        ps = trimmedProbs defaults.trimAt n p
-        bars = ps
-                |> initSqrHist
-                |> sortBars
-                |> updateBars
-                |> postProcBars
-    in
-        makeConvertToBinomial min bars
 
 
-
-
+initModel : Model
 initModel = { n = defaults.n
             , p = defaults.p
             , successLbl = "Success"
@@ -123,6 +76,8 @@ initModel = { n = defaults.n
             , xData = initFloat
             , pValue = NoPValue
             , output = ""
+            , tailLimit = NoPValue
+            , lastCount = Nothing
             }
 
 
@@ -148,130 +103,42 @@ type Msg  = Collect Int
 -- update helpers
 
 
+resetX : Model -> Model
 resetX model =
     { model | xData = initFloat}
 
 
+resetTail : Model -> Model
 resetTail model =
     { model | tail = None }
-
-tailLimit model =
-  case (model.xData.val, model.tail) of
-    (Nothing, _) ->
-      NoPValue
-    
-    (_, None) ->
-      NoPValue
-
-    (Just x, Left) ->
-      Lower x 
-
-    (Just x, Right) ->
-      Upper x 
-
-    (Just x, Two) ->
-      let 
-        mean = meanBinom model.n model.p
-        sd = sdBinom model.n model.p
-        distToMean = Basics.abs (x - mean)
-      in
-        TwoTail (mean - distToMean) (mean + distToMean)
-
-inLower l pair =
-  let 
-    (cnt, freq) = pair
-    cntF = cnt |> toFloat
-  in
-    if cntF <= l then freq else 0
-
-inUpper u pair =
-  let 
-    (cnt, freq) = pair
-    cntF = cnt |> toFloat
-  in
-    if cntF >= u then freq else 0
-   
-inTail : PValue Float -> (Int, Int) -> PValue Int
-inTail tailLim pair =
-  case tailLim of
-    NoPValue ->
-      NoPValue
-      
-    Lower l ->
-      pair |> inLower l |> Lower
-    
-    Upper u ->
-      pair |> inUpper u |> Upper
-
-    TwoTail l u ->
-      TwoTail
-        (pair |> inLower l)
-        (pair |> inUpper u)
-      
-
-startingPValue tail =
-    case tail of
-        None ->
-            NoPValue
-
-        Left ->
-            Lower 0
-
-        Right ->
-            Upper 0
-
-        Two ->
-            TwoTail 0 0
-
-
-addTails : PValue Int -> PValue Int -> PValue Int
-addTails pval1 pval2 =
-  case (pval1, pval2) of
-    (Lower f1, Lower f2) ->
-      Lower (f1 + f2)
-
-    (Upper f1, Upper f2) ->
-      Upper (f1 + f2)
-
-    (TwoTail l1 u1, TwoTail l2 u2) ->
-      TwoTail (l1 + l2) (u1 + u2)
-
-    _ ->
-      NoPValue
-
-getPValue : Model -> PValue Int
-getPValue model =
-  case model.xData.val of
-    Nothing ->
-      NoPValue
-
-    Just x ->
-      model.ys
-      |> Dict.toList
-      |> List.map (inTail (tailLimit model))
-      |> List.foldl (addTails) (startingPValue model.tail)
 
 
 updatePValue : Model -> Model
 updatePValue model =
     { model | pValue = model |> getPValue }
 
+
+resetPValue : Model -> Model
 resetPValue model =
     { model | pValue = NoPValue }
 
 
-isXInOfBounds : Int -> Float -> Bool
-isXInOfBounds n x = 
-    (x >= 0) && (x <= (toFloat n))
+updateTailLimits : Model -> Model
+updateTailLimits model = 
+    { model | tailLimit = model |> tailLimit}
+          
 
-updateXData : Int -> String -> NumericData Float -> NumericData Float 
-updateXData n lbl xData = 
-    updateNumeric String.toFloat (isXInOfBounds n) lbl xData
+resetTailLimits : Model -> Model
+resetTailLimits model =
+    { model | tailLimit = NoPValue }
 
+
+updateBinomGen : Model -> Model
 updateBinomGen model =
     { model | binomGen = getBinomGen model.n model.p }
 
 
+updateN : NumericData Int -> Model -> Model
 updateN nData model =
     case nData.state of
         Correct ->
@@ -280,6 +147,7 @@ updateN nData model =
         _ ->
             model
 
+updateP : NumericData Float -> Model -> Model
 updateP pData model =
     case pData.state of
         Correct ->
@@ -288,6 +156,7 @@ updateP pData model =
         _ ->
             model
 
+updateSuccess : LblData -> Model -> Model
 updateSuccess lblData model =
     case lblData.state of
         Correct ->
@@ -296,41 +165,42 @@ updateSuccess lblData model =
         _ ->
             model
 
+resetYs : Model -> Model
 resetYs model =
     { model | ys = Dict.empty
             , trials = 0
             }
 
 
-updateCount : Maybe Int -> Maybe Int
-updateCount maybeN =
-    case maybeN of
-        Just n ->
-            Just (n + 1)
-
-        Nothing ->
-            Just 1
-
-
-updateY : Int -> Dict Int Int -> Dict Int Int
-updateY x ys =
-    Dict.update x updateCount ys
-
-
 updateYs : List Float -> Model -> Model
 updateYs outcomes model =
     let
-        newXs = outcomes
-                |> List.map model.binomGen
-        newYs = List.foldl updateY model.ys newXs
+        newYs = outcomes |> updateCountDict model.binomGen model.ys
         newTrials = model.trials + (List.length outcomes)
     in
         { model | ys = newYs 
                 , trials = newTrials
                 }
 
+updateButtonVisibility : Model -> Model
 updateButtonVisibility model =
     { model | buttonVisibility = Shown}
+
+
+updateLastCount : List Float -> Model -> Model
+updateLastCount ws model =
+  let
+    last =
+      case ws of
+        [] ->
+          Nothing
+
+        w :: _ ->
+          w |> model.binomGen |> Just
+  in
+    { model | lastCount = last }
+
+
 
 -- update
 
@@ -340,12 +210,14 @@ update msg model =
     ChangeX text ->
         ( {model | xData = model.xData |> updateXData model.n text}
             |> updatePValue
+            |> updateTailLimits
         , Cmd.none
         )
 
     ChangeTail tail ->
         ( { model | tail = tail }
             |> updatePValue
+            |> updateTailLimits
         , Cmd.none
         )
 
@@ -359,13 +231,14 @@ update msg model =
         let
             newYs = updateY numSuccess model.ys
         in
-            ( { model | ys = newYs, trials = model.trials + 1 }
+            ( { model | ys = newYs, trials = model.trials + 1, lastCount = Just numSuccess }
             , Cmd.none
             )
 
     NewStatistics ws ->
         ( model 
             |> updateYs ws
+            |> updateLastCount ws
             |> updatePValue
         , Cmd.none
         )
@@ -375,6 +248,7 @@ update msg model =
             newModel = model 
                         |> resetYs
                         |> resetPValue
+                        |> resetTailLimits
                         |> resetX
                         |> resetTail
 
@@ -392,6 +266,7 @@ update msg model =
                             |> updateP pData
                             |> resetYs
                             |> resetPValue
+                            |> resetTailLimits
                             |> resetX
                             |> resetTail
 
@@ -413,6 +288,7 @@ update msg model =
                             |> updateN nData
                             |> resetYs
                             |> resetPValue
+                            |> resetTailLimits
                             |> resetX
                             |> resetTail
 
@@ -458,132 +334,53 @@ subscriptions model =
 
 -- debug views
 
-resetButton =
+resetButton : msg -> Html msg
+resetButton onClickMsg =
     Button.button
         [ Button.primary
-        , Button.onClick Reset
+        , Button.onClick onClickMsg
         , Button.small
         ]
         [ Html.text "Reset" ]
 
-pullOffThree s =
-    let
-        n = String.length s
-    in
-        if  n == 0 then
-            Nothing
-        else if  n >= 3 then
-            Just ( String.right 3 s
-                 , String.left (n - 3) s
-                 )
-        else
-            Just ( s
-                 , ""
-                 )
 
-
-stringAndAddCommas n = 
-    n
-    |> String.fromInt
-    |> List.Extra.unfoldr pullOffThree 
-    |> List.reverse 
-    |> String.join "," 
-
-
-
+totalCollectedTxt : Model -> Html msg
 totalCollectedTxt model =
     (model.trials |> stringAndAddCommas) ++ " statistics collected" |> Html.text
 
 
-collectButtonText n =
-    let
-        zeros = n
-              |> toFloat
-              |> logBase 10
-              |> round
-    in
-        if zeros < 3 then (String.fromInt n) else (String.fromInt (10^(zeros - 3))) ++ "K"
-        
+collectButton : (Int -> msg) -> Int -> ButtonGroup.ButtonItem msg
+collectButton toOnClick n =
+    ButtonGroup.button 
+      [ Button.primary
+      , Button.onClick (toOnClick n)
+      ] 
+      [  Html.text (changeThousandsToK n) ]
 
-collectButton n =
-    ButtonGroup.button [ Button.primary
-                     , Button.onClick (Collect n)
-                     ] 
-                     [  Html.text (collectButtonText n) ]
-
-collectButtons : List Int -> Html Msg
-collectButtons ns =
+collectButtons : (Int -> msg) -> List Int -> Html msg
+collectButtons toOnClick ns =
     div []
         [ ButtonGroup.buttonGroup
             [ ButtonGroup.small, ButtonGroup.attrs [ style "display" "block"] ]
-            (List.map collectButton ns)
+            (List.map (collectButton toOnClick) ns)
         ]
 
+collectButtonView : Model -> Html Msg
 collectButtonView model =
     collectButtonGrid 
-        ( resetButton)
+        ( resetButton Reset)
         ( if model.buttonVisibility == Shown then 
-            collectButtons defaults.collectNs 
+            collectButtons Collect defaults.collectNs 
           else 
             div [] [])
         ( totalCollectedTxt model )
 
-xEntry = entryView "" "x" 7
-
-outputView model = 
-    let
-        pStr = 
-            case model.pValue of
-                Nothing ->
-                    ""
-
-                Just p ->
-                    p |> roundFloat 4 |> String.fromFloat
-            
-    in
-        makeHtmlText "p-value = " pStr
 
 notEnoughTrials : Model -> Bool
 notEnoughTrials model =
     model.trials < defaults.minTrialsForPValue 
 
-numerator : PValue Int -> String
-numerator pval =
-  case pval of
-    NoPValue ->
-       "??"
-    
-    Lower l ->
-      l |> stringAndAddCommas
-  
-    Upper u ->
-      u |> stringAndAddCommas
 
-    TwoTail l u ->
-      [ "(" ++  (l |> stringAndAddCommas)
-      , "+"
-      , (u |> stringAndAddCommas) ++ ")"
-      ] |> String.join " "
-
-proportion : Int -> PValue Int -> String
-proportion n pval =
-  let
-      nF = n |> toFloat
-      divideByN = \i -> (toFloat i)/nF
-  in
-    case pval of
-      NoPValue ->
-        "??"
-      
-      Lower l ->
-        l |> divideByN |> roundFloat defaults.pValDigits |> String.fromFloat
-    
-      Upper u ->
-        u |> divideByN |> roundFloat defaults.pValDigits |> String.fromFloat
-
-      TwoTail l u ->
-        (l + u) |> divideByN |> roundFloat defaults.pValDigits |> String.fromFloat
-     
     
 basePValueString : Model -> String
 basePValueString model =
@@ -594,6 +391,7 @@ basePValueString model =
   , "=" 
   , model.pValue |> proportion model.trials
   ] |> String.join " " --|> display
+
 
 pvalueView : Model -> Html Msg
 pvalueView model =
@@ -615,6 +413,8 @@ pvalueView model =
     in
         pValueGrid (pvalueButtons model) (xEntry ChangeX model.xData.state ) output
 
+
+pvalueButtons : Model -> Html Msg
 pvalueButtons model =
   ButtonGroup.radioButtonGroup []
           [ ButtonGroup.radioButton
@@ -632,197 +432,18 @@ pvalueButtons model =
           ]
 
 
-combineDistColumns : (Int, Int) -> (List Int, List Int) -> (List Int , List Int)
-combineDistColumns pair columns =
+plotLimits  : Model -> (Float, Float)
+plotLimits model =
   let
-    (newX, newY) = pair
-    (oldXs, oldYs) = columns
+    combinedLimits = (combineLimits [ largeLimits model
+                                    , xLimits model.xData model.statistic model.n
+                                    , countLimits model.n model.ys
+                                    ])
   in
-    (newX :: oldXs, newY :: oldYs)
+   Maybe.withDefault (0, model.n) combinedLimits
+   |> mapAll (maybeMakeProportion model.statistic model.n)
 
-
-distColumns : Dict Int Int -> (List Float, List Float)
-distColumns yDict =
-  yDict
-  |> Dict.toList
-  |> List.foldl combineDistColumns ([], [])
-  |> Tuple.mapBoth (List.map toFloat) (List.map toFloat)
-
-
-countPairToDots : (Int, Int) -> (List Int, List Int)
-countPairToDots pair =
-  let
-    (x, cnt) = pair
-    xs = List.repeat cnt x
-    ys = List.range 1 cnt
-  in
-    (xs, ys)
-
-
-combineDotColumns : (Int, Int) -> (List Int, List Int) -> (List Int, List Int)
-combineDotColumns nextPair columns =
-  let
-    (newXs, newYs) = countPairToDots nextPair
-    (oldXs, oldYs) = columns
-  in
-    (newXs ++ oldXs, newYs ++ oldYs)
-
-
-dotColumns : Dict Int Int -> (List Float, List Float)
-dotColumns yDict =
-  let
-    countList = Dict.toList yDict
-  in
-    countList
-    |> List.foldl combineDotColumns ([], [])
-    |> Tuple.mapBoth (List.map toFloat) (List.map toFloat)
-
-
-countPairToHeights : (Int, Int) ->  List Int
-countPairToHeights pair =
-  let
-    (_, cnt) = pair
-  in
-    List.repeat cnt cnt
-
-
-combineHeights : (Int, Int) -> List Int -> List Int
-combineHeights nextPair heights =
-    (countPairToHeights nextPair) ++ heights
-
-dotColumnHeights : Dict Int Int -> List Float
-dotColumnHeights yDict = 
-    yDict
-    |> Dict.toList 
-    |> List.foldl combineHeights [] 
-    |> List.map toFloat
-
-
-updateMax : (Int, Int) -> Int -> Int
-updateMax pair currentMax =
-  let
-    ( _ , newY) = pair
-  in
-    Basics.max newY currentMax
-
-maxHeight : Dict Int Int -> Int
-maxHeight yDict =
-  yDict
-  |> Dict.toList
-  |> List.foldl updateMax 0
-
-combineTwoLimits : (Int, Int) -> (Int, Int) -> (Int, Int)
-combineTwoLimits lim1 lim2 =
-  let
-    (min1, max1) = lim1
-    (min2, max2) = lim2
-  in
-    ( Basics.min min1 min2
-    , Basics.max max1 max2
-    )
-
-
-updateLimits : Maybe (Int, Int) -> Maybe (Int, Int) -> Maybe (Int, Int)
-updateLimits next current =
-  case (next, current) of
-    (Nothing, Nothing) ->
-      Nothing
-
-    ( _ , Nothing) ->
-      next
-
-    (Nothing, _ ) ->
-      current
-
-    (Just p1, Just p2) ->
-      combineTwoLimits p1 p2
-      |> Just
-
-      
-combineLimits : List (Maybe (Int, Int)) -> Maybe (Int, Int)
-combineLimits = List.foldl updateLimits Nothing
-
-updatePairLimits : (Int, Int) -> Maybe (Int, Int) -> Maybe (Int, Int)
-updatePairLimits nextPair currentMinMax =
-  let
-    (x, _ ) = nextPair
-    xLim = (x, x)
-  in
-    case currentMinMax of
-      Nothing ->
-        Just xLim
-
-      Just currentLim ->
-        combineTwoLimits xLim currentLim
-        |> Just
-
-pairLimits : Int -> List (Int, Int) -> Maybe (Int, Int)
-pairLimits n = List.foldl updatePairLimits Nothing
-
-countLimits : Int -> Dict Int Int -> Maybe (Int, Int)
-countLimits n = pairLimits n << Dict.toList
-
-type alias Double a = (a, a)
-
-
-double : a -> (a, a)
-double val = (val, val)
-
-
-mapBoth : (a -> b) -> (a -> b) -> Double a -> Double b
-mapBoth f g doub =
-  Tuple.mapBoth f g doub
-
-
-mapAll : (a -> b) -> Double a -> Double b
-mapAll func doub =
-  Tuple.mapBoth func func doub
-
-
-shiftLimits : Model -> (Int, Int) -> (Int, Int)
-shiftLimits model pair =
-    pair
-    |> mapBoth (\n -> n - 2)  (\n -> n + 2)
-    |> mapBoth (Basics.max 0) (Basics.min model.n)
-
-xLimits : Model -> Maybe (Int, Int)
-xLimits model =
-  case model.xData.val of
-    Nothing ->
-      Nothing
-
-    Just val ->
-        case model.statistic of
-            -- When proportion, this needs to be converted back to counts to align
-            Proportion ->
-                let
-                    nFloat = model.n |> toFloat
-                    count = val |> \x -> x*nFloat |> round
-                in
-                    count
-                    |> double
-                    |> shiftLimits model
-                    |> Just
-
-            _ -> 
-                val
-                |> double
-                |> mapAll round
-                |> shiftLimits model
-                |> Just
-
-
-maybeMakeProportion : Model -> Int -> Float
-maybeMakeProportion model x =
-    case model.statistic of
-        Proportion ->
-            (toFloat x) / (toFloat model.n)
-
-        _ ->
-            x |> toFloat
-
-
-largeLimits : Model -> Maybe (Int, Int)
+largeLimits : Model -> Maybe Limits
 largeLimits model =
   let
     numSD = defaults.numSD
@@ -837,18 +458,43 @@ largeLimits model =
     else
       Just (0, model.n)
 
-plotLimits  : Model -> (Float, Float)
-plotLimits model =
+getLimits : Model -> Float -> (Float, Float)
+getLimits model limit = 
   let
-    numSD = defaults.numSD
-    mean = meanBinom model.n model.p
-    sd = sdBinom model.n model.p
-    combinedLimits = (combineLimits [ largeLimits model
-                                    , xLimits model
-                                    , countLimits model.n model.ys
-                                    ])
+    mean = 
+      case model.statistic of
+        Proportion ->
+          (meanBinom model.n model.p)/(toFloat model.n)
+
+        _ ->
+          meanBinom model.n model.p
+        
+    distToMean = Basics.abs (limit - mean)
   in
-    Maybe.withDefault (0, model.n) combinedLimits |> mapAll (maybeMakeProportion model)
+    ( mean - distToMean
+    , mean + distToMean
+    )
+tailExpression : Float -> Model -> String
+tailExpression mean model =
+  case model.tailLimit of
+    NoPValue ->
+      "false"
+
+    Lower l ->
+      "datum.X <= " ++ (String.fromFloat l)
+
+    Upper u ->
+      "datum.X >= " ++ (String.fromFloat u)
+
+    TwoTail l u ->
+      if (mean == l) || (mean == u) then 
+        "true"
+      else 
+        [ "datum.X <="
+        , l |> String.fromFloat 
+        , "|| datum.X >=" 
+        , u |> String.fromFloat
+        ] |> String.join " "
 
 
 distPlot : Model -> Spec
@@ -857,20 +503,7 @@ distPlot model =
         mean = meanBinom model.n model.p
         sd = sdBinom model.n model.p
         nFloat = toFloat model.n
-        expr =
-            case (model.tail, model.xData.val) of
-                (_, Nothing) -> "false"
-                (None, _) -> "false"
-                (Left, Just limit) ->  "datum.X <= " ++ (String.fromFloat limit)
-                (Right, Just limit) -> "datum.X >= " ++ (String.fromFloat limit)
-                (Two, Just limit)->
-                    let
-                        (lower, upper) = twoTailLimits mean limit
-                    in
-                        if (mean == limit) then "true"
-                        else"datum.X <= " ++ (String.fromFloat lower) ++ " || " ++
-                             "datum.X >= " ++ (String.fromFloat upper)
-
+        expr = model |> tailExpression mean
         isLarge = model.trials > 5000
         (xs, ys) =
           if isLarge then
@@ -981,7 +614,7 @@ debugView model =
 
 view : Model -> Html Msg
 view model =
-    mainGrid exampleSingleObservationView (collectButtonView model)  (pvalueView model) exampleSpinner blankSpinButton  exampleSample (debugView model)
+    mainGrid exampleSingleObservationView (collectButtonView model)  (pvalueView model) exampleSpinner blankSpinButton  exampleSample (debugView model) Hidden
 
 
 

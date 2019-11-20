@@ -530,5 +530,5 @@ getSpinnerModel p visibility successLbl failureLbl model =
 
 view : Model -> Html Msg
 view model =
-    mainGrid (exampleSingleObservationView) blankCollectButtons  blankPvalue (spinnerView initSpinnerConfig (getSpinnerModel 0.25 Shown "Success" "Failure" model)) (spinButtonGrid model) (exampleSample) (debugView model)
+    mainGrid (exampleSingleObservationView) blankCollectButtons  blankPvalue (spinnerView initSpinnerConfig (getSpinnerModel 0.25 Shown "Success" "Failure" model)) (spinButtonGrid model) (exampleSample) (debugView model) Hidden
 

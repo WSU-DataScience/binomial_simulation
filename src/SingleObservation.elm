@@ -29,7 +29,6 @@ main =
     }
 
 -- Model
-type Statistic = NotSelected | Count | Proportion
 
 type alias Model = { successLbl : LblData
                    , failureLbl : LblData
@@ -246,7 +245,7 @@ statPulldown model =
 
 singleObservationLayout success failure p n stat labelErr pErr =
   Form.form []
-    [ h4 [] [ Html.text "A Single Observation"]
+    [ h4 [] [ Html.text "Simulation Setup"]
     , Html.br [] []
     , Form.group []
         [
@@ -323,4 +322,4 @@ debugView model =
 
 view : Model -> Html Msg
 view model =
-    mainGrid (singleObservationView model) (debugView model) blankPvalue blankSpinner blankSpinButton blankSample blankDistPlot 
+    mainGrid (singleObservationView model) (debugView model) blankPvalue blankSpinner blankSpinButton blankSample blankDistPlot Hidden

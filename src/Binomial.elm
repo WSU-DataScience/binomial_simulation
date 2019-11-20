@@ -2,6 +2,7 @@ module Binomial exposing (..)
 
 import List.Extra exposing (..)
 import Array exposing (..)
+import Defaults exposing (defaults)
 
 meanBinom : Int -> Float -> Float
 meanBinom n p = (toFloat n)*p
@@ -115,6 +116,7 @@ initBar a i p =
      }
 
 
+initSqrHist : List Float -> SquareHistogram
 initSqrHist ps =
     let
         n = List.length ps
@@ -141,6 +143,7 @@ emptySortedBars n = { n = n
                     , full = []
                     }
 
+
 processBar : Bar -> SortedBars -> SortedBars
 processBar bar sortedBars =
     let
@@ -152,6 +155,7 @@ processBar bar sortedBars =
             { sortedBars | over = bar :: sortedBars.over }
         else
             { sortedBars | full = bar :: sortedBars.full }
+
 
 sortBars : List Bar -> SortedBars
 sortBars bars = 
@@ -199,15 +203,13 @@ updateBars bars =
                                    , full = max :: full
                                    }
 
-fixV bar =
-    { bar | v = 1.0 } 
 
 postProcBars bars =
     (bars.under ++ bars.over ++ bars.full) |> List.sortBy .i
 
 
-convertToBinomial : Float -> Array Float -> Array Int -> Int -> Float -> Int
-convertToBinomial n vs ks min u =
+convertToSquareHistogram : Float -> Array Float -> Array Int -> Int -> Float -> Int
+convertToSquareHistogram n vs ks min u =
     let
         j = u * n |> floor
         mv = vs |> Array.get j
@@ -223,87 +225,26 @@ convertToBinomial n vs ks min u =
             (Just v, Just k) ->
                 if u < v then min + j else min + k
 
-makeConvertToBinomial : Int -> List Bar -> (Float -> Int)
-makeConvertToBinomial min bars =
+
+makeConvertToSquareHistogram : Int -> List Bar -> (Float -> Int)
+makeConvertToSquareHistogram min bars =
     let
         n = bars |> List.length |> toFloat
         vs = bars |> List.map .v |> Array.fromList
         ks = bars |> List.map .k |> Array.fromList
     in
-        convertToBinomial n vs ks min
-         
-        
-        
-getVArray bars =
-    Array.fromList (List.map .v bars)
-
-wrapIn left right s =
-    [ left
-    , s
-    , right
-    ] |> String.join " "
+        convertToSquareHistogram n vs ks min
 
 
-wrapList = wrapIn "[" "]"
-
-
-wrapRecord = wrapIn "{" "}"
-
-
-wrapTuple = wrapIn "(" ")"
-
-
-initBarList = List.map2 initBar 
-
-
-addTitleComma title s =
-    [ title 
-    , " = "
-    , s 
-    , ","
-    ] |> String.join ""
-
-
-getP bar =
-    bar.pi 
-
-barString : Bar -> String
-barString bar =
-    bar
-    |> List.repeat 4
-    |> \el -> List.Extra.andMap el [ .i >> String.fromInt >> addTitleComma "i"
-                                   , .k >> String.fromInt >> addTitleComma "k"
-                                   , .v >> roundFloat 5 >> String.fromFloat >> addTitleComma "v"
-                                   , .pi >> roundFloat 5 >> String.fromFloat >> addTitleComma "pi"
-                                   ]
-    |> String.join " "
-    |> wrapRecord
-
-
-barListString : List Bar -> String
-barListString bars =
-    bars
-    |> List.map barString
-    |> String.join " "
-    |> wrapList
-
-
-sortedBarString : SortedBars -> String
-sortedBarString sortedBars = 
-    sortedBars
-    |> List.repeat 5
-    |> \rec -> List.Extra.andMap rec [ .a >> String.fromFloat >> addTitleComma "a" 
-                                     , .n >> String.fromInt >> addTitleComma "n"
-                                     , .under >> barListString >> addTitleComma "\n\nunderFull\n\n"
-                                     , .over >> barListString >> addTitleComma "\n\noverFull\n\n"
-                                     , .full >> barListString >> addTitleComma "\n\nfull\n\n"
-                                     ]
-    |> String.join ", "
-    |> wrapRecord
-
-
-listSortedBarString el =
-    el
-    |> List.map sortedBarString
-    |> String.join ", "
-    |> wrapList
+getBinomGen : Int -> Float -> (Float -> Int)
+getBinomGen n p =
+    let
+        (min, _) = trimmedXRange defaults.trimAt n p
+        ps = trimmedProbs defaults.trimAt n p
+        bars = ps
+                |> initSqrHist
+                |> sortBars
+                |> updateBars
+                |> postProcBars
+    in
+        makeConvertToSquareHistogram min bars

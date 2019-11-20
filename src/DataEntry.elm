@@ -6,6 +6,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
+type Statistic = NotSelected | Count | Proportion
+
 type Visibility
     = Hidden
     | Shown
@@ -143,29 +145,20 @@ errorView hasError msg model =
               Html.span [] [ Html.text "" ]
 
 
+-- Data Entry for X--The limit of a p value
 
--- debug views
+isXInOfBounds : Int -> Float -> Bool
+isXInOfBounds n x = 
+    (x >= 0) && (x <= (toFloat n))
+
+
+updateXData : Int -> String -> NumericData Float -> NumericData Float 
+updateXData n lbl xData = 
+    updateNumeric String.toFloat (isXInOfBounds n) lbl xData
 
 
 makeHtmlText : String -> String -> Html msg
 makeHtmlText header str =
     Html.text (header ++ str)
 
-
-entryStateView : String -> EntryState -> Html msg
-entryStateView header state =
-    case state of
-        Blank ->
-            "Blank" |> makeHtmlText header
-
-        Correct ->
-            "Correct" |> makeHtmlText header
-
-        NotANumber ->
-            "NotANumber" |> makeHtmlText header
-
-        OutOfBounds ->
-            "OutOfBounds" |> makeHtmlText header
-
-        OtherwiseIncorrect ->
-            "OtherwiseIncorrect" |> makeHtmlText header
+xEntry = entryView "" "x" 7

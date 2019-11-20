@@ -5204,10 +5204,10 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstra
 	});
 var $author$project$Animation$initModel = {animationOff: false, config: $author$project$Animation$initAnimationConfig, n: 20, nCorrect: true, sample: _List_Nil, splitDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, state: $author$project$Animation$initAnimationState};
 var $author$project$DataEntry$Hidden = {$: 'Hidden'};
-var $author$project$CollectStats$NoPValue = {$: 'NoPValue'};
-var $author$project$CollectStats$None = {$: 'None'};
-var $author$project$SingleObservation$NotSelected = {$: 'NotSelected'};
-var $author$project$CollectStats$defaults = {
+var $author$project$PValue$NoPValue = {$: 'NoPValue'};
+var $author$project$PValue$None = {$: 'None'};
+var $author$project$DataEntry$NotSelected = {$: 'NotSelected'};
+var $author$project$Defaults$defaults = {
 	collectNs: _List_fromArray(
 		[10, 100, 1000, 10000, 100000]),
 	distMinHeight: 100.0,
@@ -5281,7 +5281,7 @@ var $elm$core$Array$get = F2(
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
-var $author$project$Binomial$convertToBinomial = F5(
+var $author$project$Binomial$convertToSquareHistogram = F5(
 	function (n, vs, ks, min, u) {
 		var j = $elm$core$Basics$floor(u * n);
 		var mk = A2($elm$core$Array$get, j, ks);
@@ -5336,7 +5336,7 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
-var $author$project$Binomial$makeConvertToBinomial = F2(
+var $author$project$Binomial$makeConvertToSquareHistogram = F2(
 	function (min, bars) {
 		var vs = $elm$core$Array$fromList(
 			A2(
@@ -5353,7 +5353,7 @@ var $author$project$Binomial$makeConvertToBinomial = F2(
 					return $.k;
 				},
 				bars));
-		return A4($author$project$Binomial$convertToBinomial, n, vs, ks, min);
+		return A4($author$project$Binomial$convertToSquareHistogram, n, vs, ks, min);
 	});
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Binomial$postProcBars = function (bars) {
@@ -5578,29 +5578,31 @@ var $author$project$Binomial$updateBars = function (bars) {
 		}
 	}
 };
-var $author$project$CollectStats$getBinomGen = F2(
+var $author$project$Binomial$getBinomGen = F2(
 	function (n, p) {
-		var ps = A3($author$project$Binomial$trimmedProbs, $author$project$CollectStats$defaults.trimAt, n, p);
+		var ps = A3($author$project$Binomial$trimmedProbs, $author$project$Defaults$defaults.trimAt, n, p);
 		var bars = $author$project$Binomial$postProcBars(
 			$author$project$Binomial$updateBars(
 				$author$project$Binomial$sortBars(
 					$author$project$Binomial$initSqrHist(ps))));
-		var _v0 = A3($author$project$Binomial$trimmedXRange, $author$project$CollectStats$defaults.trimAt, n, p);
+		var _v0 = A3($author$project$Binomial$trimmedXRange, $author$project$Defaults$defaults.trimAt, n, p);
 		var min = _v0.a;
-		return A2($author$project$Binomial$makeConvertToBinomial, min, bars);
+		return A2($author$project$Binomial$makeConvertToSquareHistogram, min, bars);
 	});
 var $author$project$DataEntry$Blank = {$: 'Blank'};
 var $author$project$SingleObservation$initFloat = {state: $author$project$DataEntry$Blank, str: '', val: $elm$core$Maybe$Nothing};
 var $author$project$CollectStats$initModel = {
-	binomGen: A2($author$project$CollectStats$getBinomGen, $author$project$CollectStats$defaults.n, $author$project$CollectStats$defaults.p),
+	binomGen: A2($author$project$Binomial$getBinomGen, $author$project$Defaults$defaults.n, $author$project$Defaults$defaults.p),
 	buttonVisibility: $author$project$DataEntry$Hidden,
-	n: $author$project$CollectStats$defaults.n,
+	lastCount: $elm$core$Maybe$Nothing,
+	n: $author$project$Defaults$defaults.n,
 	output: '',
-	p: $author$project$CollectStats$defaults.p,
-	pValue: $author$project$CollectStats$NoPValue,
-	statistic: $author$project$SingleObservation$NotSelected,
+	p: $author$project$Defaults$defaults.p,
+	pValue: $author$project$PValue$NoPValue,
+	statistic: $author$project$DataEntry$NotSelected,
 	successLbl: 'Success',
-	tail: $author$project$CollectStats$None,
+	tail: $author$project$PValue$None,
+	tailLimit: $author$project$PValue$NoPValue,
 	trials: 0,
 	xData: $author$project$SingleObservation$initFloat,
 	ys: $elm$core$Dict$empty
@@ -5613,11 +5615,11 @@ var $author$project$OneSample$initModel = {
 	n: 20,
 	p: 0.25,
 	sample: $author$project$OneSample$emptySample($author$project$OneSample$initSampleData),
-	statistic: $author$project$SingleObservation$NotSelected
+	statistic: $author$project$DataEntry$NotSelected
 };
 var $author$project$DataEntry$initInt = {state: $author$project$DataEntry$Blank, str: '', val: $elm$core$Maybe$Nothing};
 var $author$project$SingleObservation$initLbl = {state: $author$project$DataEntry$Blank, str: ''};
-var $author$project$SingleObservation$initModel = {failureLbl: $author$project$SingleObservation$initLbl, nData: $author$project$DataEntry$initInt, pData: $author$project$SingleObservation$initFloat, pulldown: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, statistic: $author$project$SingleObservation$NotSelected, successLbl: $author$project$SingleObservation$initLbl};
+var $author$project$SingleObservation$initModel = {failureLbl: $author$project$SingleObservation$initLbl, nData: $author$project$DataEntry$initInt, pData: $author$project$SingleObservation$initFloat, pulldown: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, statistic: $author$project$DataEntry$NotSelected, successLbl: $author$project$SingleObservation$initLbl};
 var $author$project$Spinner$initModel = {currentOutcome: '', failureLbl: '', handLocation: 0.125, p: 0.25, successLbl: '', visibility: $author$project$DataEntry$Hidden};
 var $author$project$Main$initModel = {animation: $author$project$Animation$initModel, collect: $author$project$CollectStats$initModel, debug: false, sample: $author$project$OneSample$initModel, singleObservation: $author$project$SingleObservation$initModel, spinner: $author$project$Spinner$initModel};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6438,9 +6440,6 @@ var $author$project$Main$CollectMsg = function (a) {
 };
 var $author$project$CollectStats$OneNewStatistic = function (a) {
 	return {$: 'OneNewStatistic', a: a};
-};
-var $author$project$Main$SpinnerMsg = function (a) {
-	return {$: 'SpinnerMsg', a: a};
 };
 var $author$project$CollectStats$UpdateN = function (a) {
 	return {$: 'UpdateN', a: a};
@@ -8772,7 +8771,7 @@ var $gicentre$elm_vegalite$VegaLite$dataFromColumns = F2(
 							A2($elm$core$List$concatMap, $gicentre$elm_vegalite$VegaLite$formatProperty, fmts)))
 					])));
 	});
-var $author$project$CollectStats$combineDistColumns = F2(
+var $author$project$DistPlot$combineDistColumns = F2(
 	function (pair, columns) {
 		var _v0 = columns;
 		var oldXs = _v0.a;
@@ -8792,14 +8791,14 @@ var $elm$core$Tuple$mapBoth = F3(
 			funcA(x),
 			funcB(y));
 	});
-var $author$project$CollectStats$distColumns = function (yDict) {
+var $author$project$DistPlot$distColumns = function (yDict) {
 	return A3(
 		$elm$core$Tuple$mapBoth,
 		$elm$core$List$map($elm$core$Basics$toFloat),
 		$elm$core$List$map($elm$core$Basics$toFloat),
 		A3(
 			$elm$core$List$foldl,
-			$author$project$CollectStats$combineDistColumns,
+			$author$project$DistPlot$combineDistColumns,
 			_Utils_Tuple2(_List_Nil, _List_Nil),
 			$elm$core$Dict$toList(yDict)));
 };
@@ -8807,28 +8806,28 @@ var $gicentre$elm_vegalite$VegaLite$DNumbers = function (a) {
 	return {$: 'DNumbers', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$doNums = $gicentre$elm_vegalite$VegaLite$DNumbers;
-var $author$project$CollectStats$countPairToHeights = function (pair) {
+var $author$project$DistPlot$countPairToHeights = function (pair) {
 	var _v0 = pair;
 	var cnt = _v0.b;
 	return A2($elm$core$List$repeat, cnt, cnt);
 };
-var $author$project$CollectStats$combineHeights = F2(
+var $author$project$DistPlot$combineHeights = F2(
 	function (nextPair, heights) {
 		return _Utils_ap(
-			$author$project$CollectStats$countPairToHeights(nextPair),
+			$author$project$DistPlot$countPairToHeights(nextPair),
 			heights);
 	});
-var $author$project$CollectStats$dotColumnHeights = function (yDict) {
+var $author$project$DistPlot$dotColumnHeights = function (yDict) {
 	return A2(
 		$elm$core$List$map,
 		$elm$core$Basics$toFloat,
 		A3(
 			$elm$core$List$foldl,
-			$author$project$CollectStats$combineHeights,
+			$author$project$DistPlot$combineHeights,
 			_List_Nil,
 			$elm$core$Dict$toList(yDict)));
 };
-var $author$project$CollectStats$countPairToDots = function (pair) {
+var $author$project$DistPlot$countPairToDots = function (pair) {
 	var _v0 = pair;
 	var x = _v0.a;
 	var cnt = _v0.b;
@@ -8836,19 +8835,19 @@ var $author$project$CollectStats$countPairToDots = function (pair) {
 	var xs = A2($elm$core$List$repeat, cnt, x);
 	return _Utils_Tuple2(xs, ys);
 };
-var $author$project$CollectStats$combineDotColumns = F2(
+var $author$project$DistPlot$combineDotColumns = F2(
 	function (nextPair, columns) {
 		var _v0 = columns;
 		var oldXs = _v0.a;
 		var oldYs = _v0.b;
-		var _v1 = $author$project$CollectStats$countPairToDots(nextPair);
+		var _v1 = $author$project$DistPlot$countPairToDots(nextPair);
 		var newXs = _v1.a;
 		var newYs = _v1.b;
 		return _Utils_Tuple2(
 			_Utils_ap(newXs, oldXs),
 			_Utils_ap(newYs, oldYs));
 	});
-var $author$project$CollectStats$dotColumns = function (yDict) {
+var $author$project$DistPlot$dotColumns = function (yDict) {
 	var countList = $elm$core$Dict$toList(yDict);
 	return A3(
 		$elm$core$Tuple$mapBoth,
@@ -8856,7 +8855,7 @@ var $author$project$CollectStats$dotColumns = function (yDict) {
 		$elm$core$List$map($elm$core$Basics$toFloat),
 		A3(
 			$elm$core$List$foldl,
-			$author$project$CollectStats$combineDotColumns,
+			$author$project$DistPlot$combineDotColumns,
 			_Utils_Tuple2(_List_Nil, _List_Nil),
 			countList));
 };
@@ -9093,7 +9092,6 @@ var $gicentre$elm_vegalite$VegaLite$filter = function (f) {
 							]))));
 	}
 };
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $gicentre$elm_vegalite$VegaLite$VLHeight = {$: 'VLHeight'};
 var $gicentre$elm_vegalite$VegaLite$height = function (h) {
 	return _Utils_Tuple2(
@@ -9114,16 +9112,16 @@ var $gicentre$elm_vegalite$VegaLite$MString = function (a) {
 	return {$: 'MString', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$mStr = $gicentre$elm_vegalite$VegaLite$MString;
-var $author$project$CollectStats$updateMax = F2(
+var $author$project$DistPlot$updateMax = F2(
 	function (pair, currentMax) {
 		var _v0 = pair;
 		var newY = _v0.b;
 		return A2($elm$core$Basics$max, newY, currentMax);
 	});
-var $author$project$CollectStats$maxHeight = function (yDict) {
+var $author$project$DistPlot$maxHeight = function (yDict) {
 	return A3(
 		$elm$core$List$foldl,
-		$author$project$CollectStats$updateMax,
+		$author$project$DistPlot$updateMax,
 		0,
 		$elm$core$Dict$toList(yDict));
 };
@@ -9153,7 +9151,7 @@ var $gicentre$elm_vegalite$VegaLite$PScale = function (a) {
 	return {$: 'PScale', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$pScale = $gicentre$elm_vegalite$VegaLite$PScale;
-var $author$project$CollectStats$combineTwoLimits = F2(
+var $author$project$DistPlot$combineTwoLimits = F2(
 	function (lim1, lim2) {
 		var _v0 = lim2;
 		var min2 = _v0.a;
@@ -9165,7 +9163,7 @@ var $author$project$CollectStats$combineTwoLimits = F2(
 			A2($elm$core$Basics$min, min1, min2),
 			A2($elm$core$Basics$max, max1, max2));
 	});
-var $author$project$CollectStats$updateLimits = F2(
+var $author$project$DistPlot$updateLimits = F2(
 	function (next, current) {
 		var _v0 = _Utils_Tuple2(next, current);
 		if (_v0.a.$ === 'Nothing') {
@@ -9185,12 +9183,12 @@ var $author$project$CollectStats$updateLimits = F2(
 				var p1 = _v0.a.a;
 				var p2 = _v0.b.a;
 				return $elm$core$Maybe$Just(
-					A2($author$project$CollectStats$combineTwoLimits, p1, p2));
+					A2($author$project$DistPlot$combineTwoLimits, p1, p2));
 			}
 		}
 	});
-var $author$project$CollectStats$combineLimits = A2($elm$core$List$foldl, $author$project$CollectStats$updateLimits, $elm$core$Maybe$Nothing);
-var $author$project$CollectStats$updatePairLimits = F2(
+var $author$project$DistPlot$combineLimits = A2($elm$core$List$foldl, $author$project$DistPlot$updateLimits, $elm$core$Maybe$Nothing);
+var $author$project$DistPlot$updatePairLimits = F2(
 	function (nextPair, currentMinMax) {
 		var _v0 = nextPair;
 		var x = _v0.a;
@@ -9200,108 +9198,104 @@ var $author$project$CollectStats$updatePairLimits = F2(
 		} else {
 			var currentLim = currentMinMax.a;
 			return $elm$core$Maybe$Just(
-				A2($author$project$CollectStats$combineTwoLimits, xLim, currentLim));
+				A2($author$project$DistPlot$combineTwoLimits, xLim, currentLim));
 		}
 	});
-var $author$project$CollectStats$pairLimits = function (n) {
-	return A2($elm$core$List$foldl, $author$project$CollectStats$updatePairLimits, $elm$core$Maybe$Nothing);
+var $author$project$DistPlot$pairLimits = function (n) {
+	return A2($elm$core$List$foldl, $author$project$DistPlot$updatePairLimits, $elm$core$Maybe$Nothing);
 };
-var $author$project$CollectStats$countLimits = function (n) {
+var $author$project$DistPlot$countLimits = function (n) {
 	return A2(
 		$elm$core$Basics$composeL,
-		$author$project$CollectStats$pairLimits(n),
+		$author$project$DistPlot$pairLimits(n),
 		$elm$core$Dict$toList);
 };
 var $author$project$CollectStats$largeLimits = function (model) {
 	var sd = A2($author$project$Binomial$sdBinom, model.n, model.p);
-	var numSD = $author$project$CollectStats$defaults.numSD;
+	var numSD = $author$project$Defaults$defaults.numSD;
 	var mean = A2($author$project$Binomial$meanBinom, model.n, model.p);
 	var upp = $elm$core$Basics$ceiling(mean + (numSD * sd));
 	var low = $elm$core$Basics$floor(mean - (numSD * sd));
-	var isLargeSample = _Utils_cmp(model.n, $author$project$CollectStats$defaults.trimAt) > -1;
+	var isLargeSample = _Utils_cmp(model.n, $author$project$Defaults$defaults.trimAt) > -1;
 	return isLargeSample ? $elm$core$Maybe$Just(
 		_Utils_Tuple2(low, upp)) : $elm$core$Maybe$Just(
 		_Utils_Tuple2(0, model.n));
 };
-var $author$project$CollectStats$mapAll = F2(
+var $author$project$DistPlot$mapAll = F2(
 	function (func, doub) {
 		return A3($elm$core$Tuple$mapBoth, func, func, doub);
 	});
-var $author$project$CollectStats$maybeMakeProportion = F2(
-	function (model, x) {
-		var _v0 = model.statistic;
-		if (_v0.$ === 'Proportion') {
-			return x / model.n;
+var $author$project$DistPlot$maybeMakeProportion = F3(
+	function (statistic, n, x) {
+		if (statistic.$ === 'Proportion') {
+			return x / n;
 		} else {
 			return x;
 		}
 	});
-var $author$project$CollectStats$double = function (val) {
+var $author$project$DistPlot$double = function (val) {
 	return _Utils_Tuple2(val, val);
 };
-var $author$project$CollectStats$mapBoth = F3(
+var $author$project$DistPlot$mapBoth = F3(
 	function (f, g, doub) {
 		return A3($elm$core$Tuple$mapBoth, f, g, doub);
 	});
-var $author$project$CollectStats$shiftLimits = F2(
-	function (model, pair) {
+var $author$project$DistPlot$shiftLimits = F2(
+	function (n, pair) {
 		return A3(
-			$author$project$CollectStats$mapBoth,
+			$author$project$DistPlot$mapBoth,
 			$elm$core$Basics$max(0),
-			$elm$core$Basics$min(model.n),
+			$elm$core$Basics$min(n),
 			A3(
-				$author$project$CollectStats$mapBoth,
-				function (n) {
-					return n - 2;
+				$author$project$DistPlot$mapBoth,
+				function (i) {
+					return i - 2;
 				},
-				function (n) {
-					return n + 2;
+				function (i) {
+					return i + 2;
 				},
 				pair));
 	});
-var $author$project$CollectStats$xLimits = function (model) {
-	var _v0 = model.xData.val;
-	if (_v0.$ === 'Nothing') {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var val = _v0.a;
-		var _v1 = model.statistic;
-		if (_v1.$ === 'Proportion') {
-			var nFloat = model.n;
-			var count = function (x) {
-				return $elm$core$Basics$round(x * nFloat);
-			}(val);
-			return $elm$core$Maybe$Just(
-				A2(
-					$author$project$CollectStats$shiftLimits,
-					model,
-					$author$project$CollectStats$double(count)));
+var $author$project$DistPlot$xLimits = F3(
+	function (xData, statistic, n) {
+		var _v0 = xData.val;
+		if (_v0.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
 		} else {
-			return $elm$core$Maybe$Just(
-				A2(
-					$author$project$CollectStats$shiftLimits,
-					model,
+			var val = _v0.a;
+			if (statistic.$ === 'Proportion') {
+				var nFloat = n;
+				var count = function (x) {
+					return $elm$core$Basics$round(x * nFloat);
+				}(val);
+				return $elm$core$Maybe$Just(
 					A2(
-						$author$project$CollectStats$mapAll,
-						$elm$core$Basics$round,
-						$author$project$CollectStats$double(val))));
+						$author$project$DistPlot$shiftLimits,
+						n,
+						$author$project$DistPlot$double(count)));
+			} else {
+				return $elm$core$Maybe$Just(
+					A2(
+						$author$project$DistPlot$shiftLimits,
+						n,
+						A2(
+							$author$project$DistPlot$mapAll,
+							$elm$core$Basics$round,
+							$author$project$DistPlot$double(val))));
+			}
 		}
-	}
-};
+	});
 var $author$project$CollectStats$plotLimits = function (model) {
-	var sd = A2($author$project$Binomial$sdBinom, model.n, model.p);
-	var numSD = $author$project$CollectStats$defaults.numSD;
-	var mean = A2($author$project$Binomial$meanBinom, model.n, model.p);
-	var combinedLimits = $author$project$CollectStats$combineLimits(
+	var combinedLimits = $author$project$DistPlot$combineLimits(
 		_List_fromArray(
 			[
 				$author$project$CollectStats$largeLimits(model),
-				$author$project$CollectStats$xLimits(model),
-				A2($author$project$CollectStats$countLimits, model.n, model.ys)
+				A3($author$project$DistPlot$xLimits, model.xData, model.statistic, model.n),
+				A2($author$project$DistPlot$countLimits, model.n, model.ys)
 			]));
 	return A2(
-		$author$project$CollectStats$mapAll,
-		$author$project$CollectStats$maybeMakeProportion(model),
+		$author$project$DistPlot$mapAll,
+		A2($author$project$DistPlot$maybeMakeProportion, model.statistic, model.n),
 		A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(0, model.n),
@@ -9951,6 +9945,34 @@ var $gicentre$elm_vegalite$VegaLite$TName = function (a) {
 	return {$: 'TName', a: a};
 };
 var $gicentre$elm_vegalite$VegaLite$tName = $gicentre$elm_vegalite$VegaLite$TName;
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$CollectStats$tailExpression = F2(
+	function (mean, model) {
+		var _v0 = model.tailLimit;
+		switch (_v0.$) {
+			case 'NoPValue':
+				return 'false';
+			case 'Lower':
+				var l = _v0.a;
+				return 'datum.X <= ' + $elm$core$String$fromFloat(l);
+			case 'Upper':
+				var u = _v0.a;
+				return 'datum.X >= ' + $elm$core$String$fromFloat(u);
+			default:
+				var l = _v0.a;
+				var u = _v0.b;
+				return (_Utils_eq(mean, l) || _Utils_eq(mean, u)) ? 'true' : A2(
+					$elm$core$String$join,
+					' ',
+					_List_fromArray(
+						[
+							'datum.X <=',
+							$elm$core$String$fromFloat(l),
+							'|| datum.X >=',
+							$elm$core$String$fromFloat(u)
+						]));
+		}
+	});
 var $gicentre$elm_vegalite$VegaLite$toVegaLite = function (spec) {
 	return $elm$json$Json$Encode$object(
 		A2(
@@ -10521,11 +10543,6 @@ var $gicentre$elm_vegalite$VegaLite$transform = function (transforms) {
 		$gicentre$elm_vegalite$VegaLite$VLTransform,
 		A2($elm$json$Json$Encode$list, assemble, transforms));
 };
-var $author$project$Binomial$twoTailLimits = F2(
-	function (mean, value) {
-		var diff = (_Utils_cmp(value, mean) < 1) ? (mean - value) : (value - mean);
-		return _Utils_Tuple2(mean - diff, mean + diff);
-	});
 var $gicentre$elm_vegalite$VegaLite$VLWidth = {$: 'VLWidth'};
 var $gicentre$elm_vegalite$VegaLite$width = function (w) {
 	return _Utils_Tuple2(
@@ -10534,8 +10551,8 @@ var $gicentre$elm_vegalite$VegaLite$width = function (w) {
 };
 var $author$project$CollectStats$distPlot = function (model) {
 	var xAxisTitle = function () {
-		var _v10 = model.statistic;
-		switch (_v10.$) {
+		var _v3 = model.statistic;
+		switch (_v3.$) {
 			case 'Count':
 				return 'Count of ' + model.successLbl;
 			case 'Proportion':
@@ -10604,44 +10621,17 @@ var $author$project$CollectStats$distPlot = function (model) {
 	var mean = A2($author$project$Binomial$meanBinom, model.n, model.p);
 	var maxY = A2(
 		$elm$core$Basics$max,
-		$author$project$CollectStats$defaults.distMinHeight,
-		$author$project$CollectStats$maxHeight(model.ys));
+		$author$project$Defaults$defaults.distMinHeight,
+		$author$project$DistPlot$maxHeight(model.ys));
 	var isLarge = model.trials > 5000;
 	var mark = isLarge ? $gicentre$elm_vegalite$VegaLite$bar : $gicentre$elm_vegalite$VegaLite$circle;
-	var expr = function () {
-		var _v3 = _Utils_Tuple2(model.tail, model.xData.val);
-		if (_v3.b.$ === 'Nothing') {
-			var _v4 = _v3.b;
-			return 'false';
-		} else {
-			switch (_v3.a.$) {
-				case 'None':
-					var _v5 = _v3.a;
-					return 'false';
-				case 'Left':
-					var _v6 = _v3.a;
-					var limit = _v3.b.a;
-					return 'datum.X <= ' + $elm$core$String$fromFloat(limit);
-				case 'Right':
-					var _v7 = _v3.a;
-					var limit = _v3.b.a;
-					return 'datum.X >= ' + $elm$core$String$fromFloat(limit);
-				default:
-					var _v8 = _v3.a;
-					var limit = _v3.b.a;
-					var _v9 = A2($author$project$Binomial$twoTailLimits, mean, limit);
-					var lower = _v9.a;
-					var upper = _v9.b;
-					return _Utils_eq(mean, limit) ? 'true' : ('datum.X <= ' + ($elm$core$String$fromFloat(lower) + (' || ' + ('datum.X >= ' + $elm$core$String$fromFloat(upper)))));
-			}
-		}
-	}();
+	var expr = A2($author$project$CollectStats$tailExpression, mean, model);
 	var trans = A2(
 		$elm$core$Basics$composeL,
 		$gicentre$elm_vegalite$VegaLite$transform,
 		$gicentre$elm_vegalite$VegaLite$filter(
 			$gicentre$elm_vegalite$VegaLite$fiExpr(expr)));
-	var _v0 = isLarge ? $author$project$CollectStats$distColumns(model.ys) : $author$project$CollectStats$dotColumns(model.ys);
+	var _v0 = isLarge ? $author$project$DistPlot$distColumns(model.ys) : $author$project$DistPlot$dotColumns(model.ys);
 	var xs = _v0.a;
 	var ys = _v0.b;
 	var finalXs = function () {
@@ -10670,7 +10660,7 @@ var $author$project$CollectStats$distPlot = function (model) {
 			$gicentre$elm_vegalite$VegaLite$dataColumn,
 			'N(X)',
 			$gicentre$elm_vegalite$VegaLite$nums(ys)));
-	var heights = isLarge ? ys : $author$project$CollectStats$dotColumnHeights(model.ys);
+	var heights = isLarge ? ys : $author$project$DistPlot$dotColumnHeights(model.ys);
 	var _v1 = $author$project$CollectStats$plotLimits(model);
 	var minX = _v1.a;
 	var maxX = _v1.b;
@@ -10732,8 +10722,8 @@ var $author$project$CollectStats$distPlot = function (model) {
 	return $gicentre$elm_vegalite$VegaLite$toVegaLite(
 		_List_fromArray(
 			[
-				$gicentre$elm_vegalite$VegaLite$width($author$project$CollectStats$defaults.distPlotWidth),
-				$gicentre$elm_vegalite$VegaLite$height($author$project$CollectStats$defaults.distPlotHeight),
+				$gicentre$elm_vegalite$VegaLite$width($author$project$Defaults$defaults.distPlotWidth),
+				$gicentre$elm_vegalite$VegaLite$height($author$project$Defaults$defaults.distPlotHeight),
 				d(_List_Nil),
 				$gicentre$elm_vegalite$VegaLite$layer(
 				_List_fromArray(
@@ -10757,7 +10747,7 @@ var $author$project$CollectStats$distPlot = function (model) {
 var $author$project$Main$distPlotToJS = _Platform_outgoingPort('distPlotToJS', $elm$core$Basics$identity);
 var $author$project$Main$distPlotCmd = function (model) {
 	return $author$project$Main$distPlotToJS(
-		$author$project$CollectStats$distPlot(model));
+		$author$project$CollectStats$distPlot(model.collect));
 };
 var $elm$core$Platform$Cmd$map = _Platform_map;
 var $author$project$OneSample$outcome = F2(
@@ -13275,20 +13265,25 @@ var $author$project$Animation$update = F2(
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$SingleObservation$Count = {$: 'Count'};
+var $author$project$DataEntry$Count = {$: 'Count'};
 var $author$project$CollectStats$NewStatistics = function (a) {
 	return {$: 'NewStatistics', a: a};
 };
-var $author$project$SingleObservation$Proportion = {$: 'Proportion'};
+var $author$project$DataEntry$Proportion = {$: 'Proportion'};
 var $author$project$CollectStats$resetPValue = function (model) {
 	return _Utils_update(
 		model,
-		{pValue: $author$project$CollectStats$NoPValue});
+		{pValue: $author$project$PValue$NoPValue});
 };
 var $author$project$CollectStats$resetTail = function (model) {
 	return _Utils_update(
 		model,
-		{tail: $author$project$CollectStats$None});
+		{tail: $author$project$PValue$None});
+};
+var $author$project$CollectStats$resetTailLimits = function (model) {
+	return _Utils_update(
+		model,
+		{tailLimit: $author$project$PValue$NoPValue});
 };
 var $author$project$CollectStats$resetX = function (model) {
 	return _Utils_update(
@@ -13304,7 +13299,7 @@ var $author$project$CollectStats$updateBinomGen = function (model) {
 	return _Utils_update(
 		model,
 		{
-			binomGen: A2($author$project$CollectStats$getBinomGen, model.n, model.p)
+			binomGen: A2($author$project$Binomial$getBinomGen, model.n, model.p)
 		});
 };
 var $author$project$DataEntry$Shown = {$: 'Shown'};
@@ -13313,6 +13308,21 @@ var $author$project$CollectStats$updateButtonVisibility = function (model) {
 		model,
 		{buttonVisibility: $author$project$DataEntry$Shown});
 };
+var $author$project$CollectStats$updateLastCount = F2(
+	function (ws, model) {
+		var last = function () {
+			if (!ws.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var w = ws.a;
+				return $elm$core$Maybe$Just(
+					model.binomGen(w));
+			}
+		}();
+		return _Utils_update(
+			model,
+			{lastCount: last});
+	});
 var $author$project$CollectStats$updateN = F2(
 	function (nData, model) {
 		var _v0 = nData.state;
@@ -13339,17 +13349,17 @@ var $author$project$CollectStats$updateP = F2(
 			return model;
 		}
 	});
-var $author$project$CollectStats$Lower = function (a) {
+var $author$project$PValue$Lower = function (a) {
 	return {$: 'Lower', a: a};
 };
-var $author$project$CollectStats$TwoTail = F2(
+var $author$project$PValue$TwoTail = F2(
 	function (a, b) {
 		return {$: 'TwoTail', a: a, b: b};
 	});
-var $author$project$CollectStats$Upper = function (a) {
+var $author$project$PValue$Upper = function (a) {
 	return {$: 'Upper', a: a};
 };
-var $author$project$CollectStats$addTails = F2(
+var $author$project$PValue$addTails = F2(
 	function (pval1, pval2) {
 		var _v0 = _Utils_Tuple2(pval1, pval2);
 		_v0$3:
@@ -13359,7 +13369,7 @@ var $author$project$CollectStats$addTails = F2(
 					if (_v0.b.$ === 'Lower') {
 						var f1 = _v0.a.a;
 						var f2 = _v0.b.a;
-						return $author$project$CollectStats$Lower(f1 + f2);
+						return $author$project$PValue$Lower(f1 + f2);
 					} else {
 						break _v0$3;
 					}
@@ -13367,7 +13377,7 @@ var $author$project$CollectStats$addTails = F2(
 					if (_v0.b.$ === 'Upper') {
 						var f1 = _v0.a.a;
 						var f2 = _v0.b.a;
-						return $author$project$CollectStats$Upper(f1 + f2);
+						return $author$project$PValue$Upper(f1 + f2);
 					} else {
 						break _v0$3;
 					}
@@ -13379,7 +13389,7 @@ var $author$project$CollectStats$addTails = F2(
 						var _v2 = _v0.b;
 						var l2 = _v2.a;
 						var u2 = _v2.b;
-						return A2($author$project$CollectStats$TwoTail, l1 + l2, u1 + u2);
+						return A2($author$project$PValue$TwoTail, l1 + l2, u1 + u2);
 					} else {
 						break _v0$3;
 					}
@@ -13387,9 +13397,9 @@ var $author$project$CollectStats$addTails = F2(
 					break _v0$3;
 			}
 		}
-		return $author$project$CollectStats$NoPValue;
+		return $author$project$PValue$NoPValue;
 	});
-var $author$project$CollectStats$inLower = F2(
+var $author$project$PValue$inLower = F2(
 	function (l, pair) {
 		var _v0 = pair;
 		var cnt = _v0.a;
@@ -13397,7 +13407,7 @@ var $author$project$CollectStats$inLower = F2(
 		var cntF = cnt;
 		return (_Utils_cmp(cntF, l) < 1) ? freq : 0;
 	});
-var $author$project$CollectStats$inUpper = F2(
+var $author$project$PValue$inUpper = F2(
 	function (u, pair) {
 		var _v0 = pair;
 		var cnt = _v0.a;
@@ -13405,82 +13415,106 @@ var $author$project$CollectStats$inUpper = F2(
 		var cntF = cnt;
 		return (_Utils_cmp(cntF, u) > -1) ? freq : 0;
 	});
-var $author$project$CollectStats$inTail = F2(
+var $author$project$PValue$inTail = F2(
 	function (tailLim, pair) {
 		switch (tailLim.$) {
 			case 'NoPValue':
-				return $author$project$CollectStats$NoPValue;
+				return $author$project$PValue$NoPValue;
 			case 'Lower':
 				var l = tailLim.a;
-				return $author$project$CollectStats$Lower(
-					A2($author$project$CollectStats$inLower, l, pair));
+				return $author$project$PValue$Lower(
+					A2($author$project$PValue$inLower, l, pair));
 			case 'Upper':
 				var u = tailLim.a;
-				return $author$project$CollectStats$Upper(
-					A2($author$project$CollectStats$inUpper, u, pair));
+				return $author$project$PValue$Upper(
+					A2($author$project$PValue$inUpper, u, pair));
 			default:
 				var l = tailLim.a;
 				var u = tailLim.b;
 				return A2(
-					$author$project$CollectStats$TwoTail,
-					A2($author$project$CollectStats$inLower, l, pair),
-					A2($author$project$CollectStats$inUpper, u, pair));
+					$author$project$PValue$TwoTail,
+					A2($author$project$PValue$inLower, l, pair),
+					A2($author$project$PValue$inUpper, u, pair));
 		}
 	});
-var $author$project$CollectStats$startingPValue = function (tail) {
+var $author$project$PValue$startingPValue = function (tail) {
 	switch (tail.$) {
 		case 'None':
-			return $author$project$CollectStats$NoPValue;
+			return $author$project$PValue$NoPValue;
 		case 'Left':
-			return $author$project$CollectStats$Lower(0);
+			return $author$project$PValue$Lower(0);
 		case 'Right':
-			return $author$project$CollectStats$Upper(0);
+			return $author$project$PValue$Upper(0);
 		default:
-			return A2($author$project$CollectStats$TwoTail, 0, 0);
+			return A2($author$project$PValue$TwoTail, 0, 0);
 	}
 };
-var $author$project$CollectStats$tailLimit = function (model) {
+var $author$project$PValue$maybeMakeCount = F2(
+	function (model, x) {
+		var _v0 = model.statistic;
+		if (_v0.$ === 'Proportion') {
+			return x * model.n;
+		} else {
+			return x;
+		}
+	});
+var $author$project$Binomial$roundFloat = F2(
+	function (digits, n) {
+		var div = A2($elm$core$Basics$pow, 10, digits);
+		var shifted = n * div;
+		return function (x) {
+			return x / div;
+		}(
+			$elm$core$Basics$round(shifted));
+	});
+var $author$project$PValue$tailLimitCount = function (model) {
 	var _v0 = _Utils_Tuple2(model.xData.val, model.tail);
 	if (_v0.a.$ === 'Nothing') {
 		var _v1 = _v0.a;
-		return $author$project$CollectStats$NoPValue;
+		return $author$project$PValue$NoPValue;
 	} else {
 		switch (_v0.b.$) {
 			case 'None':
 				var _v2 = _v0.b;
-				return $author$project$CollectStats$NoPValue;
+				return $author$project$PValue$NoPValue;
 			case 'Left':
 				var x = _v0.a.a;
 				var _v3 = _v0.b;
-				return $author$project$CollectStats$Lower(x);
+				return $author$project$PValue$Lower(
+					A2($author$project$PValue$maybeMakeCount, model, x));
 			case 'Right':
 				var x = _v0.a.a;
 				var _v4 = _v0.b;
-				return $author$project$CollectStats$Upper(x);
+				return $author$project$PValue$Upper(
+					A2($author$project$PValue$maybeMakeCount, model, x));
 			default:
 				var x = _v0.a.a;
 				var _v5 = _v0.b;
+				var xNew = A2($author$project$PValue$maybeMakeCount, model, x);
 				var sd = A2($author$project$Binomial$sdBinom, model.n, model.p);
 				var mean = A2($author$project$Binomial$meanBinom, model.n, model.p);
-				var distToMean = $elm$core$Basics$abs(x - mean);
-				return A2($author$project$CollectStats$TwoTail, mean - distToMean, mean + distToMean);
+				var distToMean = $elm$core$Basics$abs(xNew - mean);
+				return A2(
+					$author$project$PValue$TwoTail,
+					A2($author$project$Binomial$roundFloat, 4, mean - distToMean),
+					A2($author$project$Binomial$roundFloat, 4, mean + distToMean));
 		}
 	}
 };
-var $author$project$CollectStats$getPValue = function (model) {
+var $author$project$PValue$getPValue = function (model) {
 	var _v0 = model.xData.val;
 	if (_v0.$ === 'Nothing') {
-		return $author$project$CollectStats$NoPValue;
+		return $author$project$PValue$NoPValue;
 	} else {
 		var x = _v0.a;
 		return A3(
 			$elm$core$List$foldl,
-			$author$project$CollectStats$addTails,
-			$author$project$CollectStats$startingPValue(model.tail),
+			$author$project$PValue$addTails,
+			$author$project$PValue$startingPValue(model.tail),
 			A2(
 				$elm$core$List$map,
-				$author$project$CollectStats$inTail(
-					$author$project$CollectStats$tailLimit(model)),
+				$author$project$PValue$inTail(
+					$author$project$PValue$tailLimitCount(model)),
 				$elm$core$Dict$toList(model.ys)));
 	}
 };
@@ -13488,7 +13522,7 @@ var $author$project$CollectStats$updatePValue = function (model) {
 	return _Utils_update(
 		model,
 		{
-			pValue: $author$project$CollectStats$getPValue(model)
+			pValue: $author$project$PValue$getPValue(model)
 		});
 };
 var $author$project$CollectStats$updateSuccess = F2(
@@ -13502,7 +13536,48 @@ var $author$project$CollectStats$updateSuccess = F2(
 			return model;
 		}
 	});
-var $author$project$CollectStats$isXInOfBounds = F2(
+var $author$project$PValue$tailLimitProportion = function (model) {
+	var tailLim = $author$project$PValue$tailLimitCount(model);
+	var nFloat = model.n;
+	var divideByN = function (x) {
+		return x / nFloat;
+	};
+	switch (tailLim.$) {
+		case 'NoPValue':
+			return $author$project$PValue$NoPValue;
+		case 'Lower':
+			var l = tailLim.a;
+			return $author$project$PValue$Lower(
+				divideByN(l));
+		case 'Upper':
+			var l = tailLim.a;
+			return $author$project$PValue$Upper(
+				divideByN(l));
+		default:
+			var l = tailLim.a;
+			var u = tailLim.b;
+			return A2(
+				$author$project$PValue$TwoTail,
+				divideByN(l),
+				divideByN(u));
+	}
+};
+var $author$project$PValue$tailLimit = function (model) {
+	var _v0 = model.statistic;
+	if (_v0.$ === 'Proportion') {
+		return $author$project$PValue$tailLimitProportion(model);
+	} else {
+		return $author$project$PValue$tailLimitCount(model);
+	}
+};
+var $author$project$CollectStats$updateTailLimits = function (model) {
+	return _Utils_update(
+		model,
+		{
+			tailLimit: $author$project$PValue$tailLimit(model)
+		});
+};
+var $author$project$DataEntry$isXInOfBounds = F2(
 	function (n, x) {
 		return (x >= 0) && (_Utils_cmp(x, n) < 1);
 	});
@@ -13560,12 +13635,12 @@ var $author$project$DataEntry$updateNumeric = F4(
 			isOutOfBounds,
 			A3($author$project$DataEntry$updateNumericStr, convert, input, numbericData));
 	});
-var $author$project$CollectStats$updateXData = F3(
+var $author$project$DataEntry$updateXData = F3(
 	function (n, lbl, xData) {
 		return A4(
 			$author$project$DataEntry$updateNumeric,
 			$elm$core$String$toFloat,
-			$author$project$CollectStats$isXInOfBounds(n),
+			$author$project$DataEntry$isXInOfBounds(n),
 			lbl,
 			xData);
 	});
@@ -13942,7 +14017,7 @@ var $elm$core$Dict$update = F3(
 			return A2($elm$core$Dict$remove, targetKey, dictionary);
 		}
 	});
-var $author$project$CollectStats$updateCount = function (maybeN) {
+var $author$project$CountDict$updateCount = function (maybeN) {
 	if (maybeN.$ === 'Just') {
 		var n = maybeN.a;
 		return $elm$core$Maybe$Just(n + 1);
@@ -13950,14 +14025,21 @@ var $author$project$CollectStats$updateCount = function (maybeN) {
 		return $elm$core$Maybe$Just(1);
 	}
 };
-var $author$project$CollectStats$updateY = F2(
+var $author$project$CountDict$updateY = F2(
 	function (x, ys) {
-		return A3($elm$core$Dict$update, x, $author$project$CollectStats$updateCount, ys);
+		return A3($elm$core$Dict$update, x, $author$project$CountDict$updateCount, ys);
+	});
+var $author$project$CountDict$updateCountDict = F3(
+	function (binomGen, cnts, outcomes) {
+		return A3(
+			$elm$core$List$foldl,
+			$author$project$CountDict$updateY,
+			cnts,
+			A2($elm$core$List$map, binomGen, outcomes));
 	});
 var $author$project$CollectStats$updateYs = F2(
 	function (outcomes, model) {
-		var newXs = A2($elm$core$List$map, model.binomGen, outcomes);
-		var newYs = A3($elm$core$List$foldl, $author$project$CollectStats$updateY, model.ys, newXs);
+		var newYs = A3($author$project$CountDict$updateCountDict, model.binomGen, model.ys, outcomes);
 		var newTrials = model.trials + $elm$core$List$length(outcomes);
 		return _Utils_update(
 			model,
@@ -13969,20 +14051,22 @@ var $author$project$CollectStats$update = F2(
 			case 'ChangeX':
 				var text = msg.a;
 				return _Utils_Tuple2(
-					$author$project$CollectStats$updatePValue(
-						_Utils_update(
-							model,
-							{
-								xData: A3($author$project$CollectStats$updateXData, model.n, text, model.xData)
-							})),
+					$author$project$CollectStats$updateTailLimits(
+						$author$project$CollectStats$updatePValue(
+							_Utils_update(
+								model,
+								{
+									xData: A3($author$project$DataEntry$updateXData, model.n, text, model.xData)
+								}))),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeTail':
 				var tail = msg.a;
 				return _Utils_Tuple2(
-					$author$project$CollectStats$updatePValue(
-						_Utils_update(
-							model,
-							{tail: tail})),
+					$author$project$CollectStats$updateTailLimits(
+						$author$project$CollectStats$updatePValue(
+							_Utils_update(
+								model,
+								{tail: tail}))),
 					$elm$core$Platform$Cmd$none);
 			case 'Collect':
 				var n = msg.a;
@@ -13997,23 +14081,31 @@ var $author$project$CollectStats$update = F2(
 							A2($elm$random$Random$float, 0, 1))));
 			case 'OneNewStatistic':
 				var numSuccess = msg.a;
-				var newYs = A2($author$project$CollectStats$updateY, numSuccess, model.ys);
+				var newYs = A2($author$project$CountDict$updateY, numSuccess, model.ys);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{trials: model.trials + 1, ys: newYs}),
+						{
+							lastCount: $elm$core$Maybe$Just(numSuccess),
+							trials: model.trials + 1,
+							ys: newYs
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NewStatistics':
 				var ws = msg.a;
 				return _Utils_Tuple2(
 					$author$project$CollectStats$updatePValue(
-						A2($author$project$CollectStats$updateYs, ws, model)),
+						A2(
+							$author$project$CollectStats$updateLastCount,
+							ws,
+							A2($author$project$CollectStats$updateYs, ws, model))),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
 				var newModel = $author$project$CollectStats$resetTail(
 					$author$project$CollectStats$resetX(
-						$author$project$CollectStats$resetPValue(
-							$author$project$CollectStats$resetYs(model))));
+						$author$project$CollectStats$resetTailLimits(
+							$author$project$CollectStats$resetPValue(
+								$author$project$CollectStats$resetYs(model)))));
 				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
 			case 'UpdateP':
 				var pData = msg.a;
@@ -14022,9 +14114,10 @@ var $author$project$CollectStats$update = F2(
 					if (_v1.$ === 'Correct') {
 						return $author$project$CollectStats$resetTail(
 							$author$project$CollectStats$resetX(
-								$author$project$CollectStats$resetPValue(
-									$author$project$CollectStats$resetYs(
-										A2($author$project$CollectStats$updateP, pData, model)))));
+								$author$project$CollectStats$resetTailLimits(
+									$author$project$CollectStats$resetPValue(
+										$author$project$CollectStats$resetYs(
+											A2($author$project$CollectStats$updateP, pData, model))))));
 					} else {
 						return model;
 					}
@@ -14039,9 +14132,10 @@ var $author$project$CollectStats$update = F2(
 					if (_v2.$ === 'Correct') {
 						return $author$project$CollectStats$resetTail(
 							$author$project$CollectStats$resetX(
-								$author$project$CollectStats$resetPValue(
-									$author$project$CollectStats$resetYs(
-										A2($author$project$CollectStats$updateN, nData, model)))));
+								$author$project$CollectStats$resetTailLimits(
+									$author$project$CollectStats$resetPValue(
+										$author$project$CollectStats$resetYs(
+											A2($author$project$CollectStats$updateN, nData, model))))));
 					} else {
 						return model;
 					}
@@ -14063,7 +14157,7 @@ var $author$project$CollectStats$update = F2(
 									$author$project$CollectStats$updateButtonVisibility(
 										_Utils_update(
 											model,
-											{statistic: $author$project$SingleObservation$Count})))))),
+											{statistic: $author$project$DataEntry$Count})))))),
 					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
@@ -14074,7 +14168,7 @@ var $author$project$CollectStats$update = F2(
 									$author$project$CollectStats$updateButtonVisibility(
 										_Utils_update(
 											model,
-											{statistic: $author$project$SingleObservation$Proportion})))))),
+											{statistic: $author$project$DataEntry$Proportion})))))),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -14143,13 +14237,13 @@ var $author$project$OneSample$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{statistic: $author$project$SingleObservation$Count}),
+						{statistic: $author$project$DataEntry$Count}),
 					$elm$core$Platform$Cmd$none);
 			case 'UseProp':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{statistic: $author$project$SingleObservation$Proportion}),
+						{statistic: $author$project$DataEntry$Proportion}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeN':
 				var nData = msg.a;
@@ -14236,13 +14330,13 @@ var $author$project$SingleObservation$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{statistic: $author$project$SingleObservation$Count}),
+						{statistic: $author$project$DataEntry$Count}),
 					$elm$core$Platform$Cmd$none);
 			case 'UseProp':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{statistic: $author$project$SingleObservation$Proportion}),
+						{statistic: $author$project$DataEntry$Proportion}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeSuccessLbl':
 				var lbl = msg.a;
@@ -14278,10 +14372,6 @@ var $author$project$SingleObservation$update = F2(
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Spinner$update = F2(
-	function (msg, model) {
-		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-	});
 var $author$project$Main$updateAnimationN = function (model) {
 	var _v0 = model.singleObservation.nData.state;
 	if (_v0.$ === 'Correct') {
@@ -14300,7 +14390,7 @@ var $author$project$Main$updateAnimationN = function (model) {
 var $author$project$Main$updateAnimationOff = function (model) {
 	var oldAnimation = model.animation;
 	var n = A2($elm$core$Maybe$withDefault, 20, model.singleObservation.nData.val);
-	var turnOff = _Utils_cmp(n, $author$project$CollectStats$defaults.trimAt) > -1;
+	var turnOff = _Utils_cmp(n, $author$project$Defaults$defaults.trimAt) > -1;
 	var newAnimation = _Utils_update(
 		oldAnimation,
 		{animationOff: turnOff});
@@ -14427,6 +14517,17 @@ var $author$project$Main$updateSample = function (model) {
 				$author$project$Main$updateSampleFailure(
 					$author$project$Main$updateSampleSuccess(model)))));
 };
+var $author$project$OneSample$updateSampleFromNumSuccess = F2(
+	function (numSuccess, model) {
+		var sample = model.sample;
+		var numFailures = model.n - numSuccess;
+		var newSample = _Utils_update(
+			sample,
+			{numFailures: numFailures, numSuccess: numSuccess});
+		return _Utils_update(
+			model,
+			{sample: newSample});
+	});
 var $author$project$Main$updateFailure = F2(
 	function (lbl, model) {
 		return _Utils_update(
@@ -14491,7 +14592,7 @@ var $author$project$Main$updateVisibility = F2(
 			{visibility: visibility});
 	});
 var $author$project$Main$updateSpinnerVisibility = function (model) {
-	var canShow = _Utils_eq(model.singleObservation.successLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.failureLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.nData.state, $author$project$DataEntry$Correct) && (!_Utils_eq(model.singleObservation.statistic, $author$project$SingleObservation$NotSelected)))));
+	var canShow = _Utils_eq(model.singleObservation.successLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.failureLbl.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.pData.state, $author$project$DataEntry$Correct) && (_Utils_eq(model.singleObservation.nData.state, $author$project$DataEntry$Correct) && (!_Utils_eq(model.singleObservation.statistic, $author$project$DataEntry$NotSelected)))));
 	var vis = canShow ? $author$project$DataEntry$Shown : $author$project$DataEntry$Hidden;
 	return _Utils_update(
 		model,
@@ -14517,7 +14618,6 @@ var $author$project$Main$update = F2(
 						return $.singleObservation;
 					}(model));
 				var newModel = _v1.a;
-				var newCmd = _v1.b;
 				var _v2 = function () {
 					switch (soMsg.$) {
 						case 'ChangeP':
@@ -14549,35 +14649,27 @@ var $author$project$Main$update = F2(
 										{collect: collectModel, singleObservation: newModel}))))));
 				return _Utils_Tuple2(
 					finalModel,
-					$author$project$Main$distPlotCmd(finalModel.collect));
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								$author$project$Main$samplePlotCmd(model),
+								$author$project$Main$distPlotCmd(model)
+							])));
 			case 'SpinnerMsg':
-				var sPmsg = msg.a;
-				var _v4 = A2(
-					$author$project$Spinner$update,
-					sPmsg,
-					function ($) {
-						return $.spinner;
-					}(model));
-				var newModel = _v4.a;
-				var newCmd = _v4.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{spinner: newModel}),
-					A2($elm$core$Platform$Cmd$map, $author$project$Main$SpinnerMsg, newCmd));
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'AnimationMsg':
 				var aMsg = msg.a;
-				var _v5 = A2(
+				var _v4 = A2(
 					$author$project$Animation$update,
 					aMsg,
 					function ($) {
 						return $.animation;
 					}(model));
-				var newModel = _v5.a;
-				var newCmd = _v5.b;
+				var newModel = _v4.a;
+				var newCmd = _v4.b;
 				var sampleModel = function () {
-					var _v9 = newModel.state;
-					switch (_v9.$) {
+					var _v8 = newModel.state;
+					switch (_v8.$) {
 						case 'UpdateSample':
 							var outcomes = newModel.sample;
 							var newSample = A2($author$project$OneSample$updateSampleFromOutcome, outcomes, model.sample);
@@ -14596,9 +14688,9 @@ var $author$project$Main$update = F2(
 							return model.sample;
 					}
 				}();
-				var _v6 = function () {
-					var _v7 = newModel.state;
-					if (_v7.$ === 'UpdateDist') {
+				var _v5 = function () {
+					var _v6 = newModel.state;
+					if (_v6.$ === 'UpdateDist') {
 						var numSuccess = $elm$core$List$sum(
 							A2(
 								$elm$core$List$map,
@@ -14612,20 +14704,35 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
 					}
 				}();
-				var collectModel = _v6.a;
+				var collectModel = _v5.a;
 				var finalModel = $author$project$Main$updateLocation(
 					_Utils_update(
 						model,
 						{animation: newModel, collect: collectModel, sample: sampleModel}));
 				var finalCmd = function () {
-					var _v8 = newModel.state;
-					switch (_v8.$) {
+					var _v7 = newModel.state;
+					switch (_v7.$) {
 						case 'UpdateSample':
-							return $author$project$Main$samplePlotCmd(finalModel);
+							return $elm$core$Platform$Cmd$batch(
+								_List_fromArray(
+									[
+										$author$project$Main$samplePlotCmd(finalModel),
+										$author$project$Main$distPlotCmd(finalModel)
+									]));
 						case 'UpdateSampleNoAnimation':
-							return $author$project$Main$samplePlotCmd(finalModel);
+							return $elm$core$Platform$Cmd$batch(
+								_List_fromArray(
+									[
+										$author$project$Main$samplePlotCmd(finalModel),
+										$author$project$Main$distPlotCmd(finalModel)
+									]));
 						case 'UpdateDist':
-							return $author$project$Main$distPlotCmd(collectModel);
+							return $elm$core$Platform$Cmd$batch(
+								_List_fromArray(
+									[
+										$author$project$Main$samplePlotCmd(finalModel),
+										$author$project$Main$distPlotCmd(finalModel)
+									]));
 						default:
 							return A2($elm$core$Platform$Cmd$map, $author$project$Main$AnimationMsg, newCmd);
 					}
@@ -14633,14 +14740,14 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(finalModel, finalCmd);
 			case 'SampleMsg':
 				var sMsg = msg.a;
-				var _v10 = A2(
+				var _v9 = A2(
 					$author$project$OneSample$update,
 					sMsg,
 					function ($) {
 						return $.sample;
 					}(model));
-				var newModel = _v10.a;
-				var _v11 = function () {
+				var newModel = _v9.a;
+				var _v10 = function () {
 					if (sMsg.$ === 'UpdateSample') {
 						var ws = sMsg.a;
 						var numSuccess = $elm$core$List$sum(
@@ -14656,7 +14763,7 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(model.collect, $elm$core$Platform$Cmd$none);
 					}
 				}();
-				var collectModel = _v11.a;
+				var collectModel = _v10.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -14664,30 +14771,50 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var cMsg = msg.a;
-				var _v13 = A2(
+				var _v12 = A2(
 					$author$project$CollectStats$update,
 					cMsg,
 					function ($) {
 						return $.collect;
 					}(model));
-				var newModel = _v13.a;
-				var newCmd = _v13.b;
+				var newModel = _v12.a;
+				var newCmd = _v12.b;
+				var _v13 = function () {
+					var _v14 = _Utils_Tuple2(cMsg, newModel.lastCount);
+					if (_v14.b.$ === 'Nothing') {
+						var _v15 = _v14.b;
+						return _Utils_Tuple2(model.sample, $elm$core$Platform$Cmd$none);
+					} else {
+						var numSuccess = _v14.b.a;
+						return _Utils_Tuple2(
+							A2($author$project$OneSample$updateSampleFromNumSuccess, numSuccess, model.sample),
+							$elm$core$Platform$Cmd$none);
+					}
+				}();
+				var sampleModel = _v13.a;
+				var finalModel = _Utils_update(
+					model,
+					{collect: newModel, sample: sampleModel});
 				var finalCmd = function () {
 					if (cMsg.$ === 'Collect') {
 						return A2($elm$core$Platform$Cmd$map, $author$project$Main$CollectMsg, newCmd);
 					} else {
-						return $author$project$Main$distPlotCmd(newModel);
+						return $elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[
+									$author$project$Main$samplePlotCmd(finalModel),
+									$author$project$Main$distPlotCmd(finalModel)
+								]));
 					}
 				}();
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{collect: newModel}),
-					finalCmd);
+				return _Utils_Tuple2(finalModel, finalCmd);
 		}
 	});
 var $author$project$Main$SampleMsg = function (a) {
 	return {$: 'SampleMsg', a: a};
+};
+var $author$project$Main$SpinnerMsg = function (a) {
+	return {$: 'SpinnerMsg', a: a};
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -14742,29 +14869,6 @@ var $author$project$Main$debugView = function (model) {
 				'collect: ',
 				$elm$core$Debug$toString(model.collect)),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$author$project$DataEntry$makeHtmlText,
-				'countLimits: ',
-				$elm$core$Debug$toString(
-					A2($author$project$CollectStats$countLimits, model.collect.n, model.collect.ys))),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$author$project$DataEntry$makeHtmlText,
-				'xLimits: ',
-				$elm$core$Debug$toString(
-					$author$project$CollectStats$xLimits(model.collect))),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$author$project$DataEntry$makeHtmlText,
-				'largeLimits: ',
-				$elm$core$Debug$toString(
-					$author$project$CollectStats$largeLimits(model.collect))),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				A2(
-				$author$project$DataEntry$makeHtmlText,
-				'xData: ',
-				$elm$core$Debug$toString(model.collect.xData)),
 				A2($elm$html$Html$br, _List_Nil, _List_Nil)
 			])) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
 };
@@ -15689,8 +15793,8 @@ var $rundis$elm_bootstrap$Bootstrap$CDN$stylesheet = A3(
 			$elm$html$Html$Attributes$href('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css')
 		]),
 	_List_Nil);
-var $author$project$Layout$mainGrid = F7(
-	function (singleObs, collectButtons, pValue, spinner, spinButton, sample, debug) {
+var $author$project$Layout$mainGrid = F8(
+	function (singleObs, collectButtons, pValue, spinner, spinButton, sample, debug, distPlotVisibility) {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
@@ -15754,13 +15858,19 @@ var $author$project$Layout$mainGrid = F7(
 										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$md8]),
 									_List_fromArray(
 										[
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$id('distPlot')
-												]),
-											_List_Nil)
+											function () {
+											if (distPlotVisibility.$ === 'Shown') {
+												return A2(
+													$elm$html$Html$div,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$id('distPlot')
+														]),
+													_List_Nil);
+											} else {
+												return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+											}
+										}()
 										]))
 								])),
 							A2(
@@ -15785,6 +15895,10 @@ var $author$project$Layout$mainGrid = F7(
 	});
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
+var $author$project$CollectStats$Collect = function (a) {
+	return {$: 'Collect', a: a};
+};
+var $author$project$CollectStats$Reset = {$: 'Reset'};
 var $rundis$elm_bootstrap$Bootstrap$Form$applyModifier = F2(
 	function (modifier, options) {
 		var value = modifier.a;
@@ -16021,9 +16135,6 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroup = F2(
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$renderGroup(
 			A2($rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroupItem, options, items));
 	});
-var $author$project$CollectStats$Collect = function (a) {
-	return {$: 'Collect', a: a};
-};
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$ButtonItem = function (a) {
 	return {$: 'ButtonItem', a: a};
 };
@@ -16158,7 +16269,7 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$button = F2(
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$ButtonItem(
 			A2($rundis$elm_bootstrap$Bootstrap$Button$button, options, children));
 	});
-var $author$project$CollectStats$collectButtonText = function (n) {
+var $author$project$Display$changeThousandsToK = function (n) {
 	var zeros = $elm$core$Basics$round(
 		A2($elm$core$Basics$logBase, 10, n));
 	return (zeros < 3) ? $elm$core$String$fromInt(n) : ($elm$core$String$fromInt(
@@ -16201,21 +16312,22 @@ var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Button$primary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
 	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
-var $author$project$CollectStats$collectButton = function (n) {
-	return A2(
-		$rundis$elm_bootstrap$Bootstrap$ButtonGroup$button,
-		_List_fromArray(
-			[
-				$rundis$elm_bootstrap$Bootstrap$Button$primary,
-				$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-				$author$project$CollectStats$Collect(n))
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				$author$project$CollectStats$collectButtonText(n))
-			]));
-};
+var $author$project$CollectStats$collectButton = F2(
+	function (toOnClick, n) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$button,
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Button$primary,
+					$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+					toOnClick(n))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$author$project$Display$changeThousandsToK(n))
+				]));
+	});
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$SM = {$: 'SM'};
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$Size = function (a) {
 	return {$: 'Size', a: a};
@@ -16223,43 +16335,48 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$Size = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$small = $rundis$elm_bootstrap$Bootstrap$ButtonGroup$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$CollectStats$collectButtons = function (ns) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroup,
-				_List_fromArray(
-					[
-						$rundis$elm_bootstrap$Bootstrap$ButtonGroup$small,
-						$rundis$elm_bootstrap$Bootstrap$ButtonGroup$attrs(
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'display', 'block')
-							]))
-					]),
-				A2($elm$core$List$map, $author$project$CollectStats$collectButton, ns))
-			]));
-};
-var $author$project$CollectStats$Reset = {$: 'Reset'};
+var $author$project$CollectStats$collectButtons = F2(
+	function (toOnClick, ns) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroup,
+					_List_fromArray(
+						[
+							$rundis$elm_bootstrap$Bootstrap$ButtonGroup$small,
+							$rundis$elm_bootstrap$Bootstrap$ButtonGroup$attrs(
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'display', 'block')
+								]))
+						]),
+					A2(
+						$elm$core$List$map,
+						$author$project$CollectStats$collectButton(toOnClick),
+						ns))
+				]));
+	});
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size = function (a) {
 	return {$: 'Size', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
-var $author$project$CollectStats$resetButton = A2(
-	$rundis$elm_bootstrap$Bootstrap$Button$button,
-	_List_fromArray(
-		[
-			$rundis$elm_bootstrap$Bootstrap$Button$primary,
-			$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$CollectStats$Reset),
-			$rundis$elm_bootstrap$Bootstrap$Button$small
-		]),
-	_List_fromArray(
-		[
-			$elm$html$Html$text('Reset')
-		]));
+var $author$project$CollectStats$resetButton = function (onClickMsg) {
+	return A2(
+		$rundis$elm_bootstrap$Bootstrap$Button$button,
+		_List_fromArray(
+			[
+				$rundis$elm_bootstrap$Bootstrap$Button$primary,
+				$rundis$elm_bootstrap$Bootstrap$Button$onClick(onClickMsg),
+				$rundis$elm_bootstrap$Bootstrap$Button$small
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Reset')
+			]));
+};
 var $elm$core$String$right = F2(
 	function (n, string) {
 		return (n < 1) ? '' : A3(
@@ -16268,7 +16385,7 @@ var $elm$core$String$right = F2(
 			$elm$core$String$length(string),
 			string);
 	});
-var $author$project$CollectStats$pullOffThree = function (s) {
+var $author$project$Display$pullOffThree = function (s) {
 	var n = $elm$core$String$length(s);
 	return (!n) ? $elm$core$Maybe$Nothing : ((n >= 3) ? $elm$core$Maybe$Just(
 		_Utils_Tuple2(
@@ -16291,25 +16408,25 @@ var $elm_community$list_extra$List$Extra$unfoldr = F2(
 				A2($elm_community$list_extra$List$Extra$unfoldr, f, b));
 		}
 	});
-var $author$project$CollectStats$stringAndAddCommas = function (n) {
+var $author$project$Display$stringAndAddCommas = function (n) {
 	return A2(
 		$elm$core$String$join,
 		',',
 		$elm$core$List$reverse(
 			A2(
 				$elm_community$list_extra$List$Extra$unfoldr,
-				$author$project$CollectStats$pullOffThree,
+				$author$project$Display$pullOffThree,
 				$elm$core$String$fromInt(n))));
 };
 var $author$project$CollectStats$totalCollectedTxt = function (model) {
 	return $elm$html$Html$text(
-		$author$project$CollectStats$stringAndAddCommas(model.trials) + ' statistics collected');
+		$author$project$Display$stringAndAddCommas(model.trials) + ' statistics collected');
 };
 var $author$project$CollectStats$collectButtonView = function (model) {
 	return A3(
 		$author$project$Layout$collectButtonGrid,
-		$author$project$CollectStats$resetButton,
-		_Utils_eq(model.buttonVisibility, $author$project$DataEntry$Shown) ? $author$project$CollectStats$collectButtons($author$project$CollectStats$defaults.collectNs) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+		$author$project$CollectStats$resetButton($author$project$CollectStats$Reset),
+		_Utils_eq(model.buttonVisibility, $author$project$DataEntry$Shown) ? A2($author$project$CollectStats$collectButtons, $author$project$CollectStats$Collect, $author$project$Defaults$defaults.collectNs) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 		$author$project$CollectStats$totalCollectedTxt(model));
 };
 var $author$project$Main$maybeCollectView = function (model) {
@@ -16319,16 +16436,16 @@ var $author$project$Main$maybeCollectView = function (model) {
 var $author$project$CollectStats$ChangeX = function (a) {
 	return {$: 'ChangeX', a: a};
 };
-var $author$project$CollectStats$numerator = function (pval) {
+var $author$project$PValue$numerator = function (pval) {
 	switch (pval.$) {
 		case 'NoPValue':
 			return '??';
 		case 'Lower':
 			var l = pval.a;
-			return $author$project$CollectStats$stringAndAddCommas(l);
+			return $author$project$Display$stringAndAddCommas(l);
 		case 'Upper':
 			var u = pval.a;
-			return $author$project$CollectStats$stringAndAddCommas(u);
+			return $author$project$Display$stringAndAddCommas(u);
 		default:
 			var l = pval.a;
 			var u = pval.b;
@@ -16337,22 +16454,13 @@ var $author$project$CollectStats$numerator = function (pval) {
 				' ',
 				_List_fromArray(
 					[
-						'(' + $author$project$CollectStats$stringAndAddCommas(l),
+						'(' + $author$project$Display$stringAndAddCommas(l),
 						'+',
-						$author$project$CollectStats$stringAndAddCommas(u) + ')'
+						$author$project$Display$stringAndAddCommas(u) + ')'
 					]));
 	}
 };
-var $author$project$Binomial$roundFloat = F2(
-	function (digits, n) {
-		var div = A2($elm$core$Basics$pow, 10, digits);
-		var shifted = n * div;
-		return function (x) {
-			return x / div;
-		}(
-			$elm$core$Basics$round(shifted));
-	});
-var $author$project$CollectStats$proportion = F2(
+var $author$project$PValue$proportion = F2(
 	function (n, pval) {
 		var nF = n;
 		var divideByN = function (i) {
@@ -16366,14 +16474,14 @@ var $author$project$CollectStats$proportion = F2(
 				return $elm$core$String$fromFloat(
 					A2(
 						$author$project$Binomial$roundFloat,
-						$author$project$CollectStats$defaults.pValDigits,
+						$author$project$Defaults$defaults.pValDigits,
 						divideByN(l)));
 			case 'Upper':
 				var u = pval.a;
 				return $elm$core$String$fromFloat(
 					A2(
 						$author$project$Binomial$roundFloat,
-						$author$project$CollectStats$defaults.pValDigits,
+						$author$project$Defaults$defaults.pValDigits,
 						divideByN(u)));
 			default:
 				var l = pval.a;
@@ -16381,7 +16489,7 @@ var $author$project$CollectStats$proportion = F2(
 				return $elm$core$String$fromFloat(
 					A2(
 						$author$project$Binomial$roundFloat,
-						$author$project$CollectStats$defaults.pValDigits,
+						$author$project$Defaults$defaults.pValDigits,
 						divideByN(l + u)));
 		}
 	});
@@ -16392,11 +16500,11 @@ var $author$project$CollectStats$basePValueString = function (model) {
 		_List_fromArray(
 			[
 				'p-value = ',
-				$author$project$CollectStats$numerator(model.pValue),
+				$author$project$PValue$numerator(model.pValue),
 				'/',
-				$author$project$CollectStats$stringAndAddCommas(model.trials),
+				$author$project$Display$stringAndAddCommas(model.trials),
 				'=',
-				A2($author$project$CollectStats$proportion, model.trials, model.pValue)
+				A2($author$project$PValue$proportion, model.trials, model.pValue)
 			]));
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
@@ -16421,7 +16529,7 @@ var $author$project$DataEntry$errorView = F3(
 				]));
 	});
 var $author$project$CollectStats$notEnoughTrials = function (model) {
-	return _Utils_cmp(model.trials, $author$project$CollectStats$defaults.minTrialsForPValue) < 0;
+	return _Utils_cmp(model.trials, $author$project$Defaults$defaults.minTrialsForPValue) < 0;
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
@@ -16495,9 +16603,9 @@ var $author$project$Layout$pValueGrid = F3(
 var $author$project$CollectStats$ChangeTail = function (a) {
 	return {$: 'ChangeTail', a: a};
 };
-var $author$project$CollectStats$Left = {$: 'Left'};
-var $author$project$CollectStats$Right = {$: 'Right'};
-var $author$project$CollectStats$Two = {$: 'Two'};
+var $author$project$PValue$Left = {$: 'Left'};
+var $author$project$PValue$Right = {$: 'Right'};
+var $author$project$PValue$Two = {$: 'Two'};
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$RadioButtonItem = function (a) {
 	return {$: 'RadioButtonItem', a: a};
 };
@@ -16572,13 +16680,13 @@ var $author$project$CollectStats$pvalueButtons = function (model) {
 			[
 				A3(
 				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$CollectStats$Left),
+				_Utils_eq(model.tail, $author$project$PValue$Left),
 				_List_fromArray(
 					[
 						$rundis$elm_bootstrap$Bootstrap$Button$primary,
 						$rundis$elm_bootstrap$Bootstrap$Button$small,
 						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$CollectStats$Left))
+						$author$project$CollectStats$ChangeTail($author$project$PValue$Left))
 					]),
 				_List_fromArray(
 					[
@@ -16586,13 +16694,13 @@ var $author$project$CollectStats$pvalueButtons = function (model) {
 					])),
 				A3(
 				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$CollectStats$Right),
+				_Utils_eq(model.tail, $author$project$PValue$Right),
 				_List_fromArray(
 					[
 						$rundis$elm_bootstrap$Bootstrap$Button$primary,
 						$rundis$elm_bootstrap$Bootstrap$Button$small,
 						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$CollectStats$Right))
+						$author$project$CollectStats$ChangeTail($author$project$PValue$Right))
 					]),
 				_List_fromArray(
 					[
@@ -16600,13 +16708,13 @@ var $author$project$CollectStats$pvalueButtons = function (model) {
 					])),
 				A3(
 				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$CollectStats$Two),
+				_Utils_eq(model.tail, $author$project$PValue$Two),
 				_List_fromArray(
 					[
 						$rundis$elm_bootstrap$Bootstrap$Button$primary,
 						$rundis$elm_bootstrap$Bootstrap$Button$small,
 						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$CollectStats$Two))
+						$author$project$CollectStats$ChangeTail($author$project$PValue$Two))
 					]),
 				_List_fromArray(
 					[
@@ -17013,7 +17121,7 @@ var $author$project$DataEntry$entryView = F5(
 						$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$text(
 							A4($author$project$DataEntry$entryOptions, placeholder, n, msg, status))))));
 	});
-var $author$project$CollectStats$xEntry = A3($author$project$DataEntry$entryView, '', 'x', 7);
+var $author$project$DataEntry$xEntry = A3($author$project$DataEntry$entryView, '', 'x', 7);
 var $author$project$CollectStats$pvalueView = function (model) {
 	var output = function () {
 		var _v1 = $author$project$CollectStats$notEnoughTrials(model);
@@ -17021,7 +17129,7 @@ var $author$project$CollectStats$pvalueView = function (model) {
 			return A3(
 				$author$project$DataEntry$errorView,
 				$author$project$CollectStats$notEnoughTrials,
-				'Need at least ' + ($elm$core$String$fromInt($author$project$CollectStats$defaults.minTrialsForPValue) + ' collected statistics'),
+				'Need at least ' + ($elm$core$String$fromInt($author$project$Defaults$defaults.minTrialsForPValue) + ' collected statistics'),
 				model);
 		} else {
 			return A2(
@@ -17057,7 +17165,7 @@ var $author$project$CollectStats$pvalueView = function (model) {
 	return A3(
 		$author$project$Layout$pValueGrid,
 		$author$project$CollectStats$pvalueButtons(model),
-		A2($author$project$CollectStats$xEntry, $author$project$CollectStats$ChangeX, model.xData.state),
+		A2($author$project$DataEntry$xEntry, $author$project$CollectStats$ChangeX, model.xData.state),
 		output);
 };
 var $author$project$Main$maybePValueView = function (model) {
@@ -17080,7 +17188,7 @@ var $author$project$Layout$sampleGrid = function (statistic) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Sample')
+								$elm$html$Html$text('Latest Sample')
 							])),
 						A2(
 						$rundis$elm_bootstrap$Bootstrap$Grid$row,
@@ -17200,7 +17308,7 @@ var $author$project$SingleObservation$singleObservationLayout = F7(
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text('A Single Observation')
+							$elm$html$Html$text('Simulation Setup')
 						])),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil),
 					A2(
@@ -18592,7 +18700,7 @@ var $author$project$Spinner$spinnerView = F2(
 			}());
 	});
 var $author$project$Main$view = function (model) {
-	return A7(
+	return A8(
 		$author$project$Layout$mainGrid,
 		A2(
 			$elm$html$Html$map,
@@ -18618,7 +18726,8 @@ var $author$project$Main$view = function (model) {
 			$elm$html$Html$map,
 			$author$project$Main$SampleMsg,
 			A2($author$project$OneSample$maybeSampleView, model.spinner.visibility, model.sample)),
-		$author$project$Main$debugView(model));
+		$author$project$Main$debugView(model),
+		model.spinner.visibility);
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});

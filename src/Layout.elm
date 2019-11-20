@@ -11,7 +11,7 @@ import Bootstrap.Grid.Row as Row
 import Bootstrap.Form as Form
 import DataEntry exposing (..)
 
-mainGrid singleObs collectButtons pValue spinner spinButton sample debug =
+mainGrid singleObs collectButtons pValue spinner spinButton sample debug  distPlotVisibility =
     div [] [  Grid.container []
                 [CDN.stylesheet -- creates an inline style node 
                 , Grid.row []
@@ -32,7 +32,14 @@ mainGrid singleObs collectButtons pValue spinner spinButton sample debug =
                                     ]
                                 ]
                     , Grid.col [ Col.md8] 
-                               [ div [id "distPlot" ] []
+                               [ 
+                                   case distPlotVisibility of
+                                    Shown ->
+                                        div [id "distPlot" ] []
+
+                                    _ ->
+                                        div [] []
+
                                ]
                     ]
                 , Grid.row []
@@ -86,7 +93,7 @@ exampleSingleObservation =
 sampleGrid statistic =
   div []
       [ Form.group []
-        [ h4 [] [ Html.text "Sample"]
+        [ h4 [] [ Html.text "Latest Sample"]
         , Grid.row []
             [ Grid.col [ Col.xs10 ]
                       [ statistic ]
