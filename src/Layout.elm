@@ -120,16 +120,12 @@ collectButtonGrid reset buttons count =
                               
                   ]
               , Grid.row []
-                  [ Grid.col  [ Col.xs2 ]
-                              [ Html.text "Collect" ]
-                  , Grid.col  [ Col.xs10 ]
+                  [ Grid.col  [ Col.xs10 ]
                               [ buttons ]
                               
                   ]
               , Grid.row []
-                  [ Grid.col  [ Col.xs2 ]
-                              []
-                  , Grid.col  [ Col.xs10 ]
+                  [  Grid.col  [ Col.xs10 ]
                               [ count ]
                   ]
               ]

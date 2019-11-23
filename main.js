@@ -15931,8 +15931,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$group = F2(
 	});
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col10 = {$: 'Col10'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs10 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col10);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col2 = {$: 'Col2'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col2);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs3 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col3);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col9 = {$: 'Col9'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs9 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col9);
@@ -15982,14 +15980,6 @@ var $author$project$Layout$collectButtonGrid = F3(
 									A2(
 									$rundis$elm_bootstrap$Bootstrap$Grid$col,
 									_List_fromArray(
-										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Collect')
-										])),
-									A2(
-									$rundis$elm_bootstrap$Bootstrap$Grid$col,
-									_List_fromArray(
 										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs10]),
 									_List_fromArray(
 										[buttons]))
@@ -15999,11 +15989,6 @@ var $author$project$Layout$collectButtonGrid = F3(
 							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									$rundis$elm_bootstrap$Bootstrap$Grid$col,
-									_List_fromArray(
-										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2]),
-									_List_Nil),
 									A2(
 									$rundis$elm_bootstrap$Bootstrap$Grid$col,
 									_List_fromArray(
@@ -17204,6 +17189,8 @@ var $author$project$Main$maybePValueView = function (model) {
 	var show = _Utils_eq(model.spinner.visibility, $author$project$DataEntry$Shown);
 	return show ? $author$project$CollectStats$pvalueView(model.collect) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
 };
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col2 = {$: 'Col2'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs2 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col2);
 var $author$project$Layout$sampleGrid = function (statistic) {
 	return A2(
 		$elm$html$Html$div,
@@ -17350,12 +17337,12 @@ var $author$project$DataEntry$hasLabelError = function (model) {
 	return _Utils_eq(model.successLbl.state, $author$project$DataEntry$OtherwiseIncorrect) || _Utils_eq(model.failureLbl.state, $author$project$DataEntry$OtherwiseIncorrect);
 };
 var $author$project$DataEntry$labelError = A2($author$project$DataEntry$errorView, $author$project$DataEntry$hasLabelError, 'The labels cannot be the same.');
-var $author$project$DataEntry$nEntry = A3($author$project$DataEntry$basicEntry, '', 'n', 4);
+var $author$project$DataEntry$nEntry = A3($author$project$DataEntry$basicEntry, 'n', '', 4);
 var $author$project$DataEntry$hasNError = function (model) {
 	return _Utils_eq(model.nData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.nData.state, $author$project$DataEntry$OutOfBounds);
 };
 var $author$project$DataEntry$nError = A2($author$project$DataEntry$errorView, $author$project$DataEntry$hasNError, 'n is a whole number.');
-var $author$project$DataEntry$pEntry = A3($author$project$DataEntry$basicEntry, '', 'p', 3);
+var $author$project$DataEntry$pEntry = A3($author$project$DataEntry$basicEntry, 'p', '', 3);
 var $author$project$DataEntry$hasPError = function (model) {
 	return _Utils_eq(model.pData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.pData.state, $author$project$DataEntry$OutOfBounds);
 };

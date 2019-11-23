@@ -180,8 +180,8 @@ basicEntry lbl placeholder tab msg state =
 
 successEntry = basicEntry "Success" "Label" 1
 failureEntry = basicEntry "Failure" "Label" 2
-pEntry = basicEntry "" "p" 3
-nEntry = basicEntry "" "n" 4
+pEntry = basicEntry "p" "" 3
+nEntry = basicEntry "n" "" 4
 
 
 hasLabelError : { a | successLbl : LblData, failureLbl : LblData} -> Bool
