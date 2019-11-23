@@ -13577,9 +13577,13 @@ var $author$project$CollectStats$updateTailLimits = function (model) {
 			tailLimit: $author$project$PValue$tailLimit(model)
 		});
 };
-var $author$project$DataEntry$isXInOfBounds = F2(
-	function (n, x) {
-		return (x >= 0) && (_Utils_cmp(x, n) < 1);
+var $author$project$DataEntry$isXInOfBounds = F3(
+	function (stat, n, x) {
+		if (stat.$ === 'Proportion') {
+			return (x >= 0) && (x <= 1);
+		} else {
+			return (x >= 0) && (_Utils_cmp(x, n) < 1);
+		}
 	});
 var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$DataEntry$Correct = {$: 'Correct'};
@@ -13635,14 +13639,14 @@ var $author$project$DataEntry$updateNumeric = F4(
 			isOutOfBounds,
 			A3($author$project$DataEntry$updateNumericStr, convert, input, numbericData));
 	});
-var $author$project$DataEntry$updateXData = F3(
-	function (n, lbl, xData) {
+var $author$project$DataEntry$updateXData = F2(
+	function (lbl, model) {
 		return A4(
 			$author$project$DataEntry$updateNumeric,
 			$elm$core$String$toFloat,
-			$author$project$DataEntry$isXInOfBounds(n),
+			A2($author$project$DataEntry$isXInOfBounds, model.statistic, model.n),
 			lbl,
-			xData);
+			model.xData);
 	});
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
@@ -14056,7 +14060,7 @@ var $author$project$CollectStats$update = F2(
 							_Utils_update(
 								model,
 								{
-									xData: A3($author$project$DataEntry$updateXData, model.n, text, model.xData)
+									xData: A2($author$project$DataEntry$updateXData, text, model)
 								}))),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeTail':
@@ -16528,6 +16532,9 @@ var $author$project$DataEntry$errorView = F3(
 					$elm$html$Html$text('')
 				]));
 	});
+var $author$project$DataEntry$hasXError = function (model) {
+	return _Utils_eq(model.xData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.xData.state, $author$project$DataEntry$OutOfBounds);
+};
 var $author$project$CollectStats$notEnoughTrials = function (model) {
 	return _Utils_cmp(model.trials, $author$project$Defaults$defaults.minTrialsForPValue) < 0;
 };
@@ -16722,24 +16729,24 @@ var $author$project$CollectStats$pvalueButtons = function (model) {
 					]))
 			]));
 };
-var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config = function (a) {
-	return {$: 'Config', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$config = function (input_) {
-	return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config(
-		{attributes: _List_Nil, input: input_, predecessors: _List_Nil, size: $elm$core$Maybe$Nothing, successors: _List_Nil});
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs = function (a) {
-	return {$: 'Attrs', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$attrs = function (attrs_) {
-	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs(attrs_);
-};
 var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Danger = {$: 'Danger'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$Validation = function (a) {
 	return {$: 'Validation', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$danger = $rundis$elm_bootstrap$Bootstrap$Form$Input$Validation($rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Danger);
+var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Success = {$: 'Success'};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$success = $rundis$elm_bootstrap$Bootstrap$Form$Input$Validation($rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Success);
+var $author$project$DataEntry$addEntryState = F2(
+	function (status, opts) {
+		switch (status.$) {
+			case 'Blank':
+				return opts;
+			case 'Correct':
+				return A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Input$success, opts);
+			default:
+				return A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Input$danger, opts);
+		}
+	});
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput = function (a) {
 	return {$: 'OnInput', a: a};
 };
@@ -16752,35 +16759,21 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder = function (value_) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder(value_);
 };
-var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Success = {$: 'Success'};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$success = $rundis$elm_bootstrap$Bootstrap$Form$Input$Validation($rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Success);
-var $elm$html$Html$Attributes$tabindex = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'tabIndex',
-		$elm$core$String$fromInt(n));
-};
-var $author$project$DataEntry$entryOptions = F4(
-	function (placeholder, n, msg, status) {
-		var baseOptions = _List_fromArray(
+var $author$project$DataEntry$baseOptions = F2(
+	function (placeholder, msg) {
+		return _List_fromArray(
 			[
 				$rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder(placeholder),
-				$rundis$elm_bootstrap$Bootstrap$Form$Input$onInput(msg),
-				$rundis$elm_bootstrap$Bootstrap$Form$Input$attrs(
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$tabindex(n)
-					]))
+				$rundis$elm_bootstrap$Bootstrap$Form$Input$onInput(msg)
 			]);
-		switch (status.$) {
-			case 'Blank':
-				return baseOptions;
-			case 'Correct':
-				return A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Input$success, baseOptions);
-			default:
-				return A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Input$danger, baseOptions);
-		}
 	});
+var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config = function (a) {
+	return {$: 'Config', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$config = function (input_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config(
+		{attributes: _List_Nil, input: input_, predecessors: _List_Nil, size: $elm$core$Maybe$Nothing, successors: _List_Nil});
+};
 var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$predecessors = F2(
 	function (addons, _v0) {
 		var conf = _v0.a;
@@ -17101,8 +17094,8 @@ var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$view = function (_v0) {
 					},
 					conf.successors))));
 };
-var $author$project$DataEntry$entryView = F5(
-	function (placeholder, label, n, msg, status) {
+var $author$project$DataEntry$entryView = F2(
+	function (label, opts) {
 		return $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$view(
 			A2(
 				$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$predecessors,
@@ -17118,30 +17111,69 @@ var $author$project$DataEntry$entryView = F5(
 					]),
 				$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$small(
 					$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$config(
-						$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$text(
-							A4($author$project$DataEntry$entryOptions, placeholder, n, msg, status))))));
+						$rundis$elm_bootstrap$Bootstrap$Form$InputGroup$text(opts)))));
 	});
-var $author$project$DataEntry$xEntry = A3($author$project$DataEntry$entryView, '', 'x', 7);
-var $author$project$CollectStats$pvalueView = function (model) {
-	var output = function () {
-		var _v1 = $author$project$CollectStats$notEnoughTrials(model);
-		if (_v1) {
-			return A3(
-				$author$project$DataEntry$errorView,
-				$author$project$CollectStats$notEnoughTrials,
-				'Need at least ' + ($elm$core$String$fromInt($author$project$Defaults$defaults.minTrialsForPValue) + ' collected statistics'),
-				model);
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Value = function (a) {
+	return {$: 'Value', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$value = function (value_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Value(value_);
+};
+var $author$project$DataEntry$withValue = F2(
+	function (value, opts) {
+		return A2(
+			$elm$core$List$cons,
+			$rundis$elm_bootstrap$Bootstrap$Form$Input$value(value),
+			opts);
+	});
+var $author$project$DataEntry$xEntry = F2(
+	function (msg, model) {
+		var lbl = function () {
+			var _v0 = model.statistic;
+			if (_v0.$ === 'Proportion') {
+				return 'prop';
+			} else {
+				return 'x';
+			}
+		}();
+		return A2(
+			$author$project$DataEntry$entryView,
+			lbl,
+			A2(
+				$author$project$DataEntry$withValue,
+				model.xData.str,
+				A2(
+					$author$project$DataEntry$addEntryState,
+					model.xData.state,
+					A2(
+						$author$project$DataEntry$withValue,
+						model.xData.str,
+						A2($author$project$DataEntry$baseOptions, '', msg)))));
+	});
+var $author$project$DataEntry$xError = function (model) {
+	var msg = function () {
+		var _v0 = model.statistic;
+		if (_v0.$ === 'Proportion') {
+			return 'prop is a number between 0 and 1';
 		} else {
-			return A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$author$project$CollectStats$basePValueString(model))
-					]));
+			return 'x is a number between 0 and ' + ($elm$core$String$fromInt(model.n) + '.');
 		}
 	}();
+	return A3($author$project$DataEntry$errorView, $author$project$DataEntry$hasXError, msg, model);
+};
+var $author$project$CollectStats$pvalueView = function (model) {
+	var output = $author$project$DataEntry$hasXError(model) ? $author$project$DataEntry$xError(model) : ($author$project$CollectStats$notEnoughTrials(model) ? A3(
+		$author$project$DataEntry$errorView,
+		$author$project$CollectStats$notEnoughTrials,
+		'Need at least ' + ($elm$core$String$fromInt($author$project$Defaults$defaults.minTrialsForPValue) + ' collected statistics'),
+		model) : A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$author$project$CollectStats$basePValueString(model))
+			])));
 	var htmlGenerator = F2(
 		function (isDisplayMode, stringLatex) {
 			if ((isDisplayMode.$ === 'Just') && isDisplayMode.a) {
@@ -17165,7 +17197,7 @@ var $author$project$CollectStats$pvalueView = function (model) {
 	return A3(
 		$author$project$Layout$pValueGrid,
 		$author$project$CollectStats$pvalueButtons(model),
-		A2($author$project$DataEntry$xEntry, $author$project$CollectStats$ChangeX, model.xData.state),
+		A2($author$project$DataEntry$xEntry, $author$project$CollectStats$ChangeX, model),
 		output);
 };
 var $author$project$Main$maybePValueView = function (model) {
@@ -17277,17 +17309,57 @@ var $author$project$SingleObservation$ChangeP = function (a) {
 var $author$project$SingleObservation$ChangeSuccessLbl = function (a) {
 	return {$: 'ChangeSuccessLbl', a: a};
 };
-var $author$project$SingleObservation$failureEntry = A3($author$project$DataEntry$entryView, 'Label', 'Failure', 2);
-var $author$project$SingleObservation$hasLabelError = function (model) {
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs = function (a) {
+	return {$: 'Attrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs(attrs_);
+};
+var $elm$html$Html$Attributes$tabindex = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$DataEntry$hasTabIndex = F2(
+	function (n, opts) {
+		return A2(
+			$elm$core$List$cons,
+			$rundis$elm_bootstrap$Bootstrap$Form$Input$attrs(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$tabindex(n)
+					])),
+			opts);
+	});
+var $author$project$DataEntry$basicEntry = F5(
+	function (lbl, placeholder, tab, msg, state) {
+		return A2(
+			$author$project$DataEntry$entryView,
+			lbl,
+			A2(
+				$author$project$DataEntry$hasTabIndex,
+				tab,
+				A2(
+					$author$project$DataEntry$addEntryState,
+					state,
+					A2($author$project$DataEntry$baseOptions, placeholder, msg))));
+	});
+var $author$project$DataEntry$failureEntry = A3($author$project$DataEntry$basicEntry, 'Failure', 'Label', 2);
+var $author$project$DataEntry$hasLabelError = function (model) {
 	return _Utils_eq(model.successLbl.state, $author$project$DataEntry$OtherwiseIncorrect) || _Utils_eq(model.failureLbl.state, $author$project$DataEntry$OtherwiseIncorrect);
 };
-var $author$project$SingleObservation$labelError = A2($author$project$DataEntry$errorView, $author$project$SingleObservation$hasLabelError, 'The labels cannot be the same.');
-var $author$project$SingleObservation$nEntry = A3($author$project$DataEntry$entryView, '', 'n', 4);
-var $author$project$SingleObservation$pEntry = A3($author$project$DataEntry$entryView, '', 'p', 3);
-var $author$project$SingleObservation$hasPError = function (model) {
+var $author$project$DataEntry$labelError = A2($author$project$DataEntry$errorView, $author$project$DataEntry$hasLabelError, 'The labels cannot be the same.');
+var $author$project$DataEntry$nEntry = A3($author$project$DataEntry$basicEntry, '', 'n', 4);
+var $author$project$DataEntry$hasNError = function (model) {
+	return _Utils_eq(model.nData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.nData.state, $author$project$DataEntry$OutOfBounds);
+};
+var $author$project$DataEntry$nError = A2($author$project$DataEntry$errorView, $author$project$DataEntry$hasNError, 'n is a whole number.');
+var $author$project$DataEntry$pEntry = A3($author$project$DataEntry$basicEntry, '', 'p', 3);
+var $author$project$DataEntry$hasPError = function (model) {
 	return _Utils_eq(model.pData.state, $author$project$DataEntry$NotANumber) || _Utils_eq(model.pData.state, $author$project$DataEntry$OutOfBounds);
 };
-var $author$project$SingleObservation$pError = A2($author$project$DataEntry$errorView, $author$project$SingleObservation$hasPError, 'p is a number between 0 and 1.');
+var $author$project$DataEntry$pError = A2($author$project$DataEntry$errorView, $author$project$DataEntry$hasPError, 'p is a number between 0 and 1.');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $rundis$elm_bootstrap$Bootstrap$Form$form = F2(
 	function (attributes, children) {
@@ -17296,8 +17368,8 @@ var $rundis$elm_bootstrap$Bootstrap$Form$form = F2(
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col7 = {$: 'Col7'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs7 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col7);
-var $author$project$SingleObservation$singleObservationLayout = F7(
-	function (success, failure, p, n, stat, labelErr, pErr) {
+var $author$project$SingleObservation$singleObservationLayout = F8(
+	function (success, failure, p, n, stat, labelErr, pErr, nErr) {
 		return A2(
 			$rundis$elm_bootstrap$Bootstrap$Form$form,
 			_List_Nil,
@@ -17371,7 +17443,8 @@ var $author$project$SingleObservation$singleObservationLayout = F7(
 								]))
 						])),
 					labelErr,
-					pErr
+					pErr,
+					nErr
 				]));
 	});
 var $author$project$SingleObservation$UseCount = {$: 'UseCount'};
@@ -17925,17 +17998,18 @@ var $author$project$SingleObservation$statPulldown = function (model) {
 									]),
 								$author$project$SingleObservation$inputFeedback(model))))))));
 };
-var $author$project$SingleObservation$successEntry = A3($author$project$DataEntry$entryView, 'Label', 'Success', 1);
+var $author$project$DataEntry$successEntry = A3($author$project$DataEntry$basicEntry, 'Success', 'Label', 1);
 var $author$project$SingleObservation$singleObservationView = function (model) {
-	return A7(
+	return A8(
 		$author$project$SingleObservation$singleObservationLayout,
-		A2($author$project$SingleObservation$successEntry, $author$project$SingleObservation$ChangeSuccessLbl, model.successLbl.state),
-		A2($author$project$SingleObservation$failureEntry, $author$project$SingleObservation$ChangeFailureLbl, model.failureLbl.state),
-		A2($author$project$SingleObservation$pEntry, $author$project$SingleObservation$ChangeP, model.pData.state),
-		A2($author$project$SingleObservation$nEntry, $author$project$SingleObservation$ChangeN, model.nData.state),
+		A2($author$project$DataEntry$successEntry, $author$project$SingleObservation$ChangeSuccessLbl, model.successLbl.state),
+		A2($author$project$DataEntry$failureEntry, $author$project$SingleObservation$ChangeFailureLbl, model.failureLbl.state),
+		A2($author$project$DataEntry$pEntry, $author$project$SingleObservation$ChangeP, model.pData.state),
+		A2($author$project$DataEntry$nEntry, $author$project$SingleObservation$ChangeN, model.nData.state),
 		$author$project$SingleObservation$statPulldown(model),
-		$author$project$SingleObservation$labelError(model),
-		$author$project$SingleObservation$pError(model));
+		$author$project$DataEntry$labelError(model),
+		$author$project$DataEntry$pError(model),
+		$author$project$DataEntry$nError(model));
 };
 var $author$project$Animation$Spin = {$: 'Spin'};
 var $author$project$Animation$ToggleAnimation = function (a) {

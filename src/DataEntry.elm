@@ -62,26 +62,31 @@ entryConfig placeholder label onInput =
     }
 
 
-entryOptions : String -> Int -> (String -> msg) -> EntryState -> List (Input.Option msg)
-entryOptions placeholder n msg status =
-    let
-        baseOptions =
+baseOptions : String -> (String -> msg) -> List (Input.Option msg)
+baseOptions placeholder msg =
             [ Input.placeholder placeholder
             , Input.onInput msg
-            , Input.attrs [ Html.Attributes.tabindex n
+            ]
 
-            ]
-            ]
-    in
+hasTabIndex : Int -> List (Input.Option msg) -> List (Input.Option msg)
+hasTabIndex n opts =
+            (Input.attrs [ Html.Attributes.tabindex n ]) :: opts
+
+withValue : String -> List (Input.Option msg) -> List (Input.Option msg)
+withValue value opts =
+            (Input.value value) :: opts
+
+addEntryState : EntryState -> List (Input.Option msg) -> List (Input.Option msg)
+addEntryState status opts =
     case status of
         Blank ->
-            baseOptions
+            opts
 
         Correct ->
-            Input.success :: baseOptions
+            Input.success :: opts
 
         _ ->
-            Input.danger :: baseOptions
+            Input.danger :: opts
 
 
 numericEntryState : (String -> Maybe a) -> (a -> Bool) -> String -> EntryState
@@ -123,10 +128,10 @@ updateNumeric convert isOutOfBounds input numbericData =
         |> updateNumericState convert isOutOfBounds
 
 
-entryView : String -> String -> Int -> (String -> msg) -> EntryState -> Html msg
-entryView placeholder label n msg status =
+entryView : String -> List (Input.Option msg) -> Html msg
+entryView label opts =
     InputGroup.config
-        (InputGroup.text (entryOptions placeholder n msg status))
+        (InputGroup.text opts)
         |> InputGroup.small
         |> InputGroup.predecessors
             [ InputGroup.span [] [ Html.text label ] ]
@@ -147,18 +152,88 @@ errorView hasError msg model =
 
 -- Data Entry for X--The limit of a p value
 
-isXInOfBounds : Int -> Float -> Bool
-isXInOfBounds n x = 
-    (x >= 0) && (x <= (toFloat n))
+isXInOfBounds : Statistic -> Int -> Float -> Bool
+isXInOfBounds stat n x = 
+    case stat of
+        Proportion ->
+            (x >= 0) && (x <= 1)
+
+        _ ->
+            (x >= 0) && (x <= (toFloat n))
 
 
-updateXData : Int -> String -> NumericData Float -> NumericData Float 
-updateXData n lbl xData = 
-    updateNumeric String.toFloat (isXInOfBounds n) lbl xData
+updateXData lbl model = 
+    updateNumeric String.toFloat (isXInOfBounds model.statistic model.n) lbl model.xData
 
 
 makeHtmlText : String -> String -> Html msg
 makeHtmlText header str =
     Html.text (header ++ str)
 
-xEntry = entryView "" "x" 7
+-- view helpers
+
+basicEntry lbl placeholder tab msg state = 
+    entryView lbl   (baseOptions placeholder msg
+                    |> addEntryState state
+                    |> hasTabIndex tab
+                    )
+
+successEntry = basicEntry "Success" "Label" 1
+failureEntry = basicEntry "Failure" "Label" 2
+pEntry = basicEntry "" "p" 3
+nEntry = basicEntry "" "n" 4
+
+
+hasLabelError : { a | successLbl : LblData, failureLbl : LblData} -> Bool
+hasLabelError model  =
+    (model.successLbl.state == OtherwiseIncorrect) || (model.failureLbl.state == OtherwiseIncorrect)
+
+
+labelError = errorView hasLabelError "The labels cannot be the same."
+
+
+hasPError model =
+    (model.pData.state == NotANumber) || (model.pData.state == OutOfBounds)
+
+
+pError = errorView hasPError "p is a number between 0 and 1."
+
+
+hasNError model =
+    (model.nData.state == NotANumber) || (model.nData.state == OutOfBounds)
+
+
+nError = errorView hasNError "n is a whole number."
+
+
+xEntry msg model =
+    let
+        lbl = 
+            case model.statistic of
+                Proportion ->
+                    "prop"
+
+                _ ->
+                    "x"
+    in
+        entryView lbl (baseOptions "" msg
+                        |> withValue model.xData.str
+                        |> addEntryState model.xData.state
+                        |> withValue model.xData.str
+                        )
+
+hasXError model =
+    (model.xData.state == NotANumber) || (model.xData.state == OutOfBounds)
+
+xError model =
+    let
+        msg = 
+            case model.statistic of
+                Proportion ->
+                    "prop is a number between 0 and 1"
+                
+                _ ->
+                    "x is a number between 0 and " ++ (model.n |> String.fromInt) ++ "."
+    in
+        errorView hasXError msg model
+

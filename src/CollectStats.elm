@@ -208,7 +208,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     ChangeX text ->
-        ( {model | xData = model.xData |> updateXData model.n text}
+        ( {model | xData = model |> updateXData text}
             |> updatePValue
             |> updateTailLimits
         , Cmd.none
@@ -404,14 +404,14 @@ pvalueView model =
                 _ ->
                     Html.span [] [ Html.text stringLatex ]
         output = 
-            case notEnoughTrials model of
-                True ->
-                    errorView notEnoughTrials  ("Need at least " ++ (defaults.minTrialsForPValue |> String.fromInt) ++ " collected statistics") model
-
-                False ->
-                  Html.div [][ Html.text (model |> basePValueString) ]--|> K.generate htmlGenerator ]
+            if hasXError model then
+              xError model
+            else if notEnoughTrials model then
+              errorView notEnoughTrials  ("Need at least " ++ (defaults.minTrialsForPValue |> String.fromInt) ++ " collected statistics") model
+            else
+              Html.div [][ Html.text (model |> basePValueString) ]--|> K.generate htmlGenerator ]
     in
-        pValueGrid (pvalueButtons model) (xEntry ChangeX model.xData.state ) output
+        pValueGrid (pvalueButtons model) (xEntry ChangeX model) output
 
 
 pvalueButtons : Model -> Html Msg

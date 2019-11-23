@@ -151,26 +151,6 @@ subscriptions model =
         [ Dropdown.subscriptions model.pulldown ChangePulldown ]
 
 
--- view helpers
-
-successEntry = entryView "Label" "Success" 1 
-
-failureEntry = entryView "Label" "Failure" 2
-
-pEntry = entryView "" "p" 3
-
-hasLabelError model  =
-    (model.successLbl.state == OtherwiseIncorrect) || (model.failureLbl.state == OtherwiseIncorrect)
-
-labelError = errorView hasLabelError "The labels cannot be the same."
-
-hasPError model =
-    (model.pData.state == NotANumber) || (model.pData.state == OutOfBounds)
-
-pError = errorView hasPError "p is a number between 0 and 1."
-
-nEntry = entryView "" "n" 4
-
 validEntry state =
     case state of
         Correct ->
@@ -183,16 +163,6 @@ validEntry state =
             Form.invalidFeedback [] [ text "Something not quite right." ]
 
 
-    --   model.pulldown
-    --   { options = [ ]
-    --   , toggleMsg = ChangePulldown
-    --   , toggleButton =
-    --       Dropdown.toggle [ Button.primary, Button.small] [ Html.text (statPulldownText model.statistic) ]
-    --   , items =
-    --       [ Dropdown.buttonItem [ onClick UseCount ] [ Html.text "Count" ]
-    --       , Dropdown.buttonItem [ onClick UseProp ] [ Html.text "Proportion" ]
-    --       ]
-    --   } 
 statPulldownText model =
   case model.statistic of
     NotSelected ->
@@ -243,7 +213,7 @@ statPulldown model =
 
         |> InputGroup.view
 
-singleObservationLayout success failure p n stat labelErr pErr =
+singleObservationLayout success failure p n stat labelErr pErr nErr =
   Form.form []
     [ h4 [] [ Html.text "Simulation Setup"]
     , Html.br [] []
@@ -270,6 +240,7 @@ singleObservationLayout success failure p n stat labelErr pErr =
         ]
     , labelErr 
     , pErr 
+    , nErr 
     ]
 
 -- view entry point for main app
@@ -282,6 +253,7 @@ singleObservationView model =
        (statPulldown model)
        (labelError model)
        (pError model)
+       (nError model)
 
 
 -- view for debug
@@ -302,6 +274,7 @@ exampleSingleObservationView =
         (Html.text ("p: " ++ (String.fromFloat state.p)))
         (Html.text ("n: " ++ (String.fromFloat state.n)))
         (Html.text ("Statistic: " ++ state.statistic))
+        (Html.text "")
         (Html.text "")
         (Html.text "")
 
