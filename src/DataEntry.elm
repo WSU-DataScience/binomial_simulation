@@ -61,16 +61,33 @@ entryConfig placeholder label onInput =
     , onInput = onInput
     }
 
-
 baseOptions : String -> (String -> msg) -> List (Input.Option msg)
 baseOptions placeholder msg =
             [ Input.placeholder placeholder
             , Input.onInput msg
             ]
 
-hasTabIndex : Int -> List (Input.Option msg) -> List (Input.Option msg)
-hasTabIndex n opts =
-            (Input.attrs [ Html.Attributes.tabindex n ]) :: opts
+addBaseOptions : String -> (String -> msg) -> List (Html.Attribute msg) -> List (Input.Option msg)
+addBaseOptions placeholder msg htmlOpts =
+            [ Input.attrs htmlOpts
+            , Input.placeholder placeholder
+            , Input.onInput msg
+            ]
+
+
+baseHtmlAttrs : String -> List (Html.Attribute msg)
+baseHtmlAttrs name =
+    [ Html.Attributes.name name
+    , Html.Attributes.id name
+    ]
+
+addTabIndex : Int -> List (Html.Attribute msg) -> List (Html.Attribute msg)
+addTabIndex n opts =
+            Html.Attributes.tabindex n  :: opts
+
+toInputOptions : List (Html.Attribute msg) -> List (Input.Option msg)
+toInputOptions htmlOpts =
+    [Input.attrs htmlOpts]
 
 withValue : String -> List (Input.Option msg) -> List (Input.Option msg)
 withValue value opts =
@@ -173,9 +190,10 @@ makeHtmlText header str =
 -- view helpers
 
 basicEntry lbl placeholder tab msg state = 
-    entryView lbl   (baseOptions placeholder msg
+    entryView lbl   (baseHtmlAttrs placeholder
+                    |> addTabIndex tab
+                    |> addBaseOptions placeholder msg
                     |> addEntryState state
-                    |> hasTabIndex tab
                     )
 
 successEntry = basicEntry "Success" "Label" 1
@@ -216,7 +234,8 @@ xEntry msg model =
                 _ ->
                     "x"
     in
-        entryView lbl (baseOptions "" msg
+        entryView lbl (baseHtmlAttrs lbl
+                        |> addBaseOptions "" msg
                         |> withValue model.xData.str
                         |> addEntryState model.xData.state
                         |> withValue model.xData.str

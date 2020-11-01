@@ -22,8 +22,7 @@ import Spinner exposing (..)
 import OneSample exposing (..)
 import Binomial exposing (..)
 import DataEntry exposing (..)
-import Bootstrap.Button as Button
-import Bootstrap.ButtonGroup as ButtonGroup
+import Button exposing (..)
 import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -334,14 +333,14 @@ subscriptions model =
 
 -- debug views
 
-resetButton : msg -> Html msg
-resetButton onClickMsg =
-    Button.button
-        [ Button.primary
-        , Button.onClick onClickMsg
-        , Button.small
-        ]
-        [ Html.text "Reset" ]
+-- resetButton : msg -> Html msg
+-- resetButton onClickMsg =
+--     Button.button
+--         [ Button.primary
+--         , Button.onClick onClickMsg
+--         , Button.small
+--         ]
+--         [ Html.text "Reset" ]
 
 
 totalCollectedTxt : Model -> Html msg
@@ -349,21 +348,21 @@ totalCollectedTxt model =
     (model.trials |> stringAndAddCommas) ++ " statistics collected" |> Html.text
 
 
-collectButton : (Int -> msg) -> Int -> ButtonGroup.ButtonItem msg
-collectButton toOnClick n =
-    ButtonGroup.button 
-      [ Button.primary
-      , Button.onClick (toOnClick n)
-      ] 
-      [  Html.text (changeThousandsToK n) ]
+-- collectButton : (Int -> msg) -> Int -> ButtonGroup.ButtonItem msg
+-- collectButton toOnClick n =
+--     ButtonGroup.button 
+--       [ Button.primary
+--       , Button.onClick (toOnClick n)
+--       ] 
+--       [  Html.text (changeThousandsToK n) ]
 
-collectButtons : (Int -> msg) -> List Int -> Html msg
-collectButtons toOnClick ns =
-    div []
-        [ ButtonGroup.buttonGroup
-            [ ButtonGroup.small, ButtonGroup.attrs [ style "display" "block"] ]
-            (List.map (collectButton toOnClick) ns)
-        ]
+-- collectButtons : (Int -> msg) -> List Int -> Html msg
+-- collectButtons toOnClick ns =
+--     div []
+--         [ ButtonGroup.buttonGroup
+--             [ ButtonGroup.small, ButtonGroup.attrs [ style "display" "block"] ]
+--             (List.map (collectButton toOnClick) ns)
+--         ]
 
 collectButtonView : Model -> Html Msg
 collectButtonView model =
@@ -414,22 +413,36 @@ pvalueView model =
         pValueGrid (pvalueButtons model) (xEntry ChangeX model) output
 
 
+pValueButtonText : Tail -> String
+pValueButtonText tail =
+    case tail of
+        Left ->
+            "Left-tail"
+        Right ->
+            "Right-tail"
+        Two ->
+            "Two-tail"
+        _ ->
+            ""
+
+
+
+-- pValueButton : String -> msg -> Bool -> ButtonGroup.RadioButtonItem msg
+-- pValueButton txt msg toggle =
+--         ButtonGroup.radioButton
+--             toggle
+--             [ Button.primary, Button.small, Button.onClick msg]
+--             [ Html.text txt ]
+
 pvalueButtons : Model -> Html Msg
 pvalueButtons model =
-  ButtonGroup.radioButtonGroup []
-          [ ButtonGroup.radioButton
-                  (model.tail == Left)
-                  [ Button.primary, Button.small, Button.onClick <| ChangeTail Left ]
-                  [ Html.text "Left-tail" ]
-          , ButtonGroup.radioButton
-                  (model.tail == Right)
-                  [ Button.primary, Button.small, Button.onClick <| ChangeTail Right ]
-                  [ Html.text "Right-tail" ]
-          , ButtonGroup.radioButton
-                  (model.tail == Two)
-                  [ Button.primary, Button.small, Button.onClick <| ChangeTail Two ]
-                  [ Html.text "Two-tail" ]
-          ]
+    let
+        tails = [Left, Right, Two]
+        txts = tails |> List.map pValueButtonText
+        msgs = tails |> List.map ChangeTail
+        toggles = tails |> List.map (\t -> model.tail == t)
+    in
+        radioButtons msgs txts toggles
 
 
 plotLimits  : Model -> (Float, Float)

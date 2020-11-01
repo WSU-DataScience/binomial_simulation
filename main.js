@@ -16258,18 +16258,13 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$button = F2(
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$ButtonItem(
 			A2($rundis$elm_bootstrap$Bootstrap$Button$button, options, children));
 	});
-var $author$project$Display$changeThousandsToK = function (n) {
-	var zeros = $elm$core$Basics$round(
-		A2($elm$core$Basics$logBase, 10, n));
-	return (zeros < 3) ? $elm$core$String$fromInt(n) : ($elm$core$String$fromInt(
-		A2($elm$core$Basics$pow, 10, zeros - 3)) + 'K');
-};
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Attrs = function (a) {
 	return {$: 'Attrs', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Button$attrs = function (attrs_) {
 	return $rundis$elm_bootstrap$Bootstrap$Internal$Button$Attrs(attrs_);
 };
+var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
 };
@@ -16301,66 +16296,74 @@ var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Button$primary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
 	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
-var $author$project$CollectStats$collectButton = F2(
-	function (toOnClick, n) {
-		return A2(
-			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$button,
-			_List_fromArray(
-				[
-					$rundis$elm_bootstrap$Bootstrap$Button$primary,
-					$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-					toOnClick(n))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$author$project$Display$changeThousandsToK(n))
-				]));
-	});
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$SM = {$: 'SM'};
-var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$Size = function (a) {
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size = function (a) {
 	return {$: 'Size', a: a};
 };
-var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$small = $rundis$elm_bootstrap$Bootstrap$ButtonGroup$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
+var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
+var $author$project$Button$buttonAttrs = F2(
+	function (msg, txt) {
+		return _List_fromArray(
+			[
+				$rundis$elm_bootstrap$Bootstrap$Button$primary,
+				$rundis$elm_bootstrap$Bootstrap$Button$small,
+				$rundis$elm_bootstrap$Bootstrap$Button$onClick(msg),
+				$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$name(txt),
+						$elm$html$Html$Attributes$id(txt)
+					]))
+			]);
+	});
+var $author$project$Button$groupButton = F2(
+	function (msg, lbl) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$button,
+			A2($author$project$Button$buttonAttrs, msg, lbl),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(lbl)
+				]));
+	});
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$CollectStats$collectButtons = F2(
+var $author$project$Button$buttonGroup = F2(
+	function (msgs, txts) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroup,
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$ButtonGroup$attrs(
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'display', 'block')
+						]))
+				]),
+			A3($elm$core$List$map2, $author$project$Button$groupButton, msgs, txts));
+	});
+var $author$project$Display$changeThousandsToK = function (n) {
+	var zeros = $elm$core$Basics$round(
+		A2($elm$core$Basics$logBase, 10, n));
+	return (zeros < 3) ? $elm$core$String$fromInt(n) : ($elm$core$String$fromInt(
+		A2($elm$core$Basics$pow, 10, zeros - 3)) + 'K');
+};
+var $author$project$Button$collectButtons = F2(
 	function (toOnClick, ns) {
+		var txts = A2($elm$core$List$map, $author$project$Display$changeThousandsToK, ns);
+		var msgs = A2($elm$core$List$map, toOnClick, ns);
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$ButtonGroup$buttonGroup,
-					_List_fromArray(
-						[
-							$rundis$elm_bootstrap$Bootstrap$ButtonGroup$small,
-							$rundis$elm_bootstrap$Bootstrap$ButtonGroup$attrs(
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'display', 'block')
-								]))
-						]),
-					A2(
-						$elm$core$List$map,
-						$author$project$CollectStats$collectButton(toOnClick),
-						ns))
+					A2($author$project$Button$buttonGroup, msgs, txts)
 				]));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size = function (a) {
-	return {$: 'Size', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
-var $author$project$CollectStats$resetButton = function (onClickMsg) {
+var $author$project$Button$resetButton = function (onClickMsg) {
 	return A2(
 		$rundis$elm_bootstrap$Bootstrap$Button$button,
-		_List_fromArray(
-			[
-				$rundis$elm_bootstrap$Bootstrap$Button$primary,
-				$rundis$elm_bootstrap$Bootstrap$Button$onClick(onClickMsg),
-				$rundis$elm_bootstrap$Bootstrap$Button$small
-			]),
+		A2($author$project$Button$buttonAttrs, onClickMsg, 'Reset'),
 		_List_fromArray(
 			[
 				$elm$html$Html$text('Reset')
@@ -16414,8 +16417,8 @@ var $author$project$CollectStats$totalCollectedTxt = function (model) {
 var $author$project$CollectStats$collectButtonView = function (model) {
 	return A3(
 		$author$project$Layout$collectButtonGrid,
-		$author$project$CollectStats$resetButton($author$project$CollectStats$Reset),
-		_Utils_eq(model.buttonVisibility, $author$project$DataEntry$Shown) ? A2($author$project$CollectStats$collectButtons, $author$project$CollectStats$Collect, $author$project$Defaults$defaults.collectNs) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+		$author$project$Button$resetButton($author$project$CollectStats$Reset),
+		_Utils_eq(model.buttonVisibility, $author$project$DataEntry$Shown) ? A2($author$project$Button$collectButtons, $author$project$CollectStats$Collect, $author$project$Defaults$defaults.collectNs) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 		$author$project$CollectStats$totalCollectedTxt(model));
 };
 var $author$project$Main$maybeCollectView = function (model) {
@@ -16598,6 +16601,19 @@ var $author$project$CollectStats$ChangeTail = function (a) {
 var $author$project$PValue$Left = {$: 'Left'};
 var $author$project$PValue$Right = {$: 'Right'};
 var $author$project$PValue$Two = {$: 'Two'};
+var $author$project$CollectStats$pValueButtonText = function (tail) {
+	switch (tail.$) {
+		case 'Left':
+			return 'Left-tail';
+		case 'Right':
+			return 'Right-tail';
+		case 'Two':
+			return 'Two-tail';
+		default:
+			return '';
+	}
+};
+var $elm$core$List$map3 = _List_map3;
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$RadioButtonItem = function (a) {
 	return {$: 'RadioButtonItem', a: a};
 };
@@ -16645,6 +16661,17 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton = F3(
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$RadioButtonItem(
 			A3($rundis$elm_bootstrap$Bootstrap$Button$radioButton, checked, options, children));
 	});
+var $author$project$Button$radioButton = F3(
+	function (txt, msg, toggle) {
+		return A3(
+			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
+			toggle,
+			A2($author$project$Button$buttonAttrs, msg, txt),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(txt)
+				]));
+	});
 var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButtonGroupItem = F2(
 	function (options, items) {
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$GroupItem(
@@ -16664,56 +16691,53 @@ var $rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButtonGroup = F2(
 		return $rundis$elm_bootstrap$Bootstrap$ButtonGroup$renderGroup(
 			A2($rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButtonGroupItem, options, items));
 	});
+var $author$project$Button$radioButtons = F3(
+	function (msgs, txts, toggles) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButtonGroup,
+			_List_Nil,
+			A4($elm$core$List$map3, $author$project$Button$radioButton, txts, msgs, toggles));
+	});
 var $author$project$CollectStats$pvalueButtons = function (model) {
-	return A2(
-		$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButtonGroup,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A3(
-				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$PValue$Left),
-				_List_fromArray(
-					[
-						$rundis$elm_bootstrap$Bootstrap$Button$primary,
-						$rundis$elm_bootstrap$Bootstrap$Button$small,
-						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$PValue$Left))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Left-tail')
-					])),
-				A3(
-				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$PValue$Right),
-				_List_fromArray(
-					[
-						$rundis$elm_bootstrap$Bootstrap$Button$primary,
-						$rundis$elm_bootstrap$Bootstrap$Button$small,
-						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$PValue$Right))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Right-tail')
-					])),
-				A3(
-				$rundis$elm_bootstrap$Bootstrap$ButtonGroup$radioButton,
-				_Utils_eq(model.tail, $author$project$PValue$Two),
-				_List_fromArray(
-					[
-						$rundis$elm_bootstrap$Bootstrap$Button$primary,
-						$rundis$elm_bootstrap$Bootstrap$Button$small,
-						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-						$author$project$CollectStats$ChangeTail($author$project$PValue$Two))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Two-tail')
-					]))
-			]));
+	var tails = _List_fromArray(
+		[$author$project$PValue$Left, $author$project$PValue$Right, $author$project$PValue$Two]);
+	var toggles = A2(
+		$elm$core$List$map,
+		function (t) {
+			return _Utils_eq(model.tail, t);
+		},
+		tails);
+	var txts = A2($elm$core$List$map, $author$project$CollectStats$pValueButtonText, tails);
+	var msgs = A2($elm$core$List$map, $author$project$CollectStats$ChangeTail, tails);
+	return A3($author$project$Button$radioButtons, msgs, txts, toggles);
 };
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs = function (a) {
+	return {$: 'Attrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs(attrs_);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput = function (a) {
+	return {$: 'OnInput', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$onInput = function (toMsg) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput(toMsg);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder = function (a) {
+	return {$: 'Placeholder', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder = function (value_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder(value_);
+};
+var $author$project$DataEntry$addBaseOptions = F3(
+	function (placeholder, msg, htmlOpts) {
+		return _List_fromArray(
+			[
+				$rundis$elm_bootstrap$Bootstrap$Form$Input$attrs(htmlOpts),
+				$rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder(placeholder),
+				$rundis$elm_bootstrap$Bootstrap$Form$Input$onInput(msg)
+			]);
+	});
 var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$Danger = {$: 'Danger'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$Validation = function (a) {
 	return {$: 'Validation', a: a};
@@ -16732,26 +16756,13 @@ var $author$project$DataEntry$addEntryState = F2(
 				return A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Input$danger, opts);
 		}
 	});
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput = function (a) {
-	return {$: 'OnInput', a: a};
+var $author$project$DataEntry$baseHtmlAttrs = function (name) {
+	return _List_fromArray(
+		[
+			$elm$html$Html$Attributes$name(name),
+			$elm$html$Html$Attributes$id(name)
+		]);
 };
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$onInput = function (toMsg) {
-	return $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput(toMsg);
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder = function (a) {
-	return {$: 'Placeholder', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder = function (value_) {
-	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Placeholder(value_);
-};
-var $author$project$DataEntry$baseOptions = F2(
-	function (placeholder, msg) {
-		return _List_fromArray(
-			[
-				$rundis$elm_bootstrap$Bootstrap$Form$Input$placeholder(placeholder),
-				$rundis$elm_bootstrap$Bootstrap$Form$Input$onInput(msg)
-			]);
-	});
 var $rundis$elm_bootstrap$Bootstrap$Form$InputGroup$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -17133,7 +17144,11 @@ var $author$project$DataEntry$xEntry = F2(
 					A2(
 						$author$project$DataEntry$withValue,
 						model.xData.str,
-						A2($author$project$DataEntry$baseOptions, '', msg)))));
+						A3(
+							$author$project$DataEntry$addBaseOptions,
+							'',
+							msg,
+							$author$project$DataEntry$baseHtmlAttrs(lbl))))));
 	});
 var $author$project$DataEntry$xError = function (model) {
 	var msg = function () {
@@ -17296,27 +17311,17 @@ var $author$project$SingleObservation$ChangeP = function (a) {
 var $author$project$SingleObservation$ChangeSuccessLbl = function (a) {
 	return {$: 'ChangeSuccessLbl', a: a};
 };
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs = function (a) {
-	return {$: 'Attrs', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Input$attrs = function (attrs_) {
-	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Attrs(attrs_);
-};
 var $elm$html$Html$Attributes$tabindex = function (n) {
 	return A2(
 		_VirtualDom_attribute,
 		'tabIndex',
 		$elm$core$String$fromInt(n));
 };
-var $author$project$DataEntry$hasTabIndex = F2(
+var $author$project$DataEntry$addTabIndex = F2(
 	function (n, opts) {
 		return A2(
 			$elm$core$List$cons,
-			$rundis$elm_bootstrap$Bootstrap$Form$Input$attrs(
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$tabindex(n)
-					])),
+			$elm$html$Html$Attributes$tabindex(n),
 			opts);
 	});
 var $author$project$DataEntry$basicEntry = F5(
@@ -17325,12 +17330,16 @@ var $author$project$DataEntry$basicEntry = F5(
 			$author$project$DataEntry$entryView,
 			lbl,
 			A2(
-				$author$project$DataEntry$hasTabIndex,
-				tab,
-				A2(
-					$author$project$DataEntry$addEntryState,
-					state,
-					A2($author$project$DataEntry$baseOptions, placeholder, msg))));
+				$author$project$DataEntry$addEntryState,
+				state,
+				A3(
+					$author$project$DataEntry$addBaseOptions,
+					placeholder,
+					msg,
+					A2(
+						$author$project$DataEntry$addTabIndex,
+						tab,
+						$author$project$DataEntry$baseHtmlAttrs(placeholder)))));
 	});
 var $author$project$DataEntry$failureEntry = A3($author$project$DataEntry$basicEntry, 'Failure', 'Label', 2);
 var $author$project$DataEntry$hasLabelError = function (model) {
@@ -18008,8 +18017,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Attrs = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$attrs = function (attrs_) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Attrs(attrs_);
 };
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Block = {$: 'Block'};
-var $rundis$elm_bootstrap$Bootstrap$Button$block = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Block;
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$On = {$: 'On'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Value = function (a) {
@@ -18237,6 +18244,16 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
 };
+var $author$project$Button$spinButton = F2(
+	function (msg, txt) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$Button$button,
+			A2($author$project$Button$buttonAttrs, msg, 'spin'),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(txt)
+				]));
+	});
 var $author$project$Animation$spinButtonText = function (model) {
 	return function (s) {
 		return 'Spin ' + (s + ' Times');
@@ -18268,19 +18285,9 @@ var $author$project$Animation$spinButtonGrid = function (model) {
 								_List_fromArray(
 									[
 										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$primary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$block,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Animation$Spin)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												$author$project$Animation$spinButtonText(model))
-											]))
+										$author$project$Button$spinButton,
+										$author$project$Animation$Spin,
+										$author$project$Animation$spinButtonText(model))
 									])),
 								A2(
 								$rundis$elm_bootstrap$Bootstrap$Grid$col,

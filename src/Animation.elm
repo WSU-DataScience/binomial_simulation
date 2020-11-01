@@ -11,7 +11,7 @@ import Layout exposing (..)
 import SingleObservation exposing (..)
 import Spinner exposing (..)
 import OneSample exposing (..)
-import Bootstrap.Button as Button
+import Button exposing (..)
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
@@ -427,15 +427,19 @@ spinButtonText model =
 
 nToLargeWarning = errorView (\model -> model.n > 50) "Animation off when n > 50" 
 
+-- spinButton : msg -> String -> Html msg
+-- spinButton msg txt =
+--     Button.button
+--         [ Button.primary, Button.small, Button.block, Button.onClick msg]
+--         [ Html.text txt]
+
 spinButtonGrid model  =
   Form.form []
     [ Form.group []
         [
           Grid.row []
             [ Grid.col  [ Col.xs6 ]
-                        [ Button.button
-                            [ Button.primary, Button.small, Button.block, Button.onClick Spin]
-                            [ Html.text (spinButtonText model) ]
+                        [ model |> spinButtonText |> spinButton Spin
                         ]
             , Grid.col  [ Col.xs6 ]
                         [ Checkbox.custom 
@@ -456,12 +460,6 @@ spinButtonGrid model  =
         ]
     ] 
 
-
-
-spinButton label msg =
-  Button.button
-    [ Button.primary, Button.block, Button.small, Button.onClick msg]
-    [ Html.text label ]
 
 
 -- debug view
